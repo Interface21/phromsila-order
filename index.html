@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ร้านพรหมศิลา - สั่งซื้อสินค้า</title>
+    <style>
+        /* ตั้งค่าหน้าจอหลักและสีพื้นหลัง */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* ป้องกันไม่ให้หน้าจอหลักมี Scrollbar */
+            background-color: #DBD8C9; 
+        }
+        
+        /* เทคนิคการดันแบนเนอร์ Google ออกนอกจอ */
+        .iframe-container {
+            width: 100%;
+            height: calc(100% + 36px); /* บวกความสูงชดเชยส่วนที่ดันขึ้นไป */
+            margin-top: -36px; /* ดัน iFrame ขึ้นไปด้านบน 36px */
+        }
+        
+        /* ตั้งค่า iFrame ให้เต็มพื้นที่ Container */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="iframe-container">
+        <iframe src="https://script.google.com/macros/s/AKfycbx3xt9rxmfiyb8l1I6Ic3V119IByVLwTr4Dxv6ZQDZgXAv1uBz8KjNGxNcn59eKAbeyXQ/exec"></iframe>
+    </div>
+</body>
+</html>
