@@ -83,7 +83,10 @@ let state = {
     if (phone.length < 9) return showAlert('ข้อผิดพลาด', 'กรุณาระบุเบอร์โทรศัพท์ให้ถูกต้อง', 'error');
     
     Swal.showLoading();
-    google.script.run.withSuccessHandler(res => {
+    google.script.run.withFailureHandler(e => {
+      Swal.close();
+      showAlert('Error', e.message || e.toString(), 'error');
+    }).withSuccessHandler(res => {
       Swal.close();
       if (res.success) {
         state.customer = res.data;
