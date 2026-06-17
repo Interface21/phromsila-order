@@ -44,10 +44,7 @@ let adminState = {
   }
 
   function goToShop() {
-    Swal.showLoading();
-    google.script.run.withSuccessHandler(url => {
-      window.top.location.href = url + '?page=customer';
-    }).getScriptUrl();
+    window.location.href = 'index.html';
   }
 
   function logout() {

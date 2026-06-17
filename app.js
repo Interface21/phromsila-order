@@ -129,10 +129,7 @@ let state = {
   }
 
   function goToAdmin() {
-    Swal.showLoading();
-    google.script.run.withSuccessHandler(url => {
-      window.top.location.href = url + '?page=admin';
-    }).getScriptUrl();
+    window.location.href = 'admin.html';
   }
 
   // --- LOAD DATA ---
