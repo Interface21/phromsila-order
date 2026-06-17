@@ -1,5 +1,5 @@
 // Replace this with your newly deployed Google Apps Script Web App URL
-const API_URL = 'https://script.google.com/macros/s/AKfycbykYcwO5RoFwxWzpaoGyYvnAlixWxxeaqa_Hx4WUKHOIFa4q_rj3uKxY57zkCPgXkujSQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxytdgSxZCR1EG5LCFUAuoYi6M0SJITA9gaj7jYcuCPCSCXucpl3RuyNOgDBIaiKbdQOw/exec';
 
 /**
  * Helper function to call the Google Apps Script Backend API
