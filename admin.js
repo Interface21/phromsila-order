@@ -520,9 +520,9 @@ let adminState = {
       const reader = new FileReader();
       reader.onloadend = function() {
         Swal.showLoading();
-        google.script.run.withSuccessHandler(url => {
-          if(url.error) { Swal.fire('ข้อผิดพลาด', 'อัปโหลดรูปภาพไม่สำเร็จ', 'error'); return; }
-          document.getElementById('prod_image_url').value = url;
+        google.script.run.withSuccessHandler(res => {
+          if(!res.success) { Swal.fire('ข้อผิดพลาด', res.data || 'อัปโหลดรูปภาพไม่สำเร็จ', 'error'); return; }
+          document.getElementById('prod_image_url').value = res.data;
           submitProductData();
         }).uploadFileToDrive(reader.result, file.name);
       };

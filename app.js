@@ -38,7 +38,9 @@ let state = {
       document.getElementById('btnLogin').classList.add('d-none');
       
       // Load active order count badge
-      google.script.run.withSuccessHandler(count => {
+      google.script.run.withSuccessHandler(res => {
+        if (!res.success) return;
+        const count = res.data;
         const btn = document.getElementById('btnMyOrders');
         const text = document.getElementById('activeOrdersText');
         text.textContent = count + " ";
