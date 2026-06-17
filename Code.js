@@ -14,20 +14,23 @@ function doPost(e) {
     const handlers = {
       'setupDatabase': setupDatabase,
       'getScriptUrl': getScriptUrl,
-      'getInitialData': getInitialData,
-      'getConfig': getConfig,
-      'getCatalogs': getCatalogs,
-      'getProducts': getProducts,
-      'getActiveOrderCount': getActiveOrderCount,
-      'submitOrder': submitOrder,
-      'registerCustomer': registerCustomer,
-      'getCustomerOrders': getCustomerOrders,
       'adminLogin': adminLogin,
-      'updateOrderStatus': updateOrderStatus,
-      'updateProduct': updateProduct,
+      'getConfig': getConfig,
+      'updateConfig': updateConfig,
+      'getCatalogs': getCatalogs,
+      'saveCatalog': saveCatalog,
+      'deleteCatalog': deleteCatalog,
+      'getProducts': getProducts,
+      'saveProduct': saveProduct,
       'deleteProduct': deleteProduct,
-      'updateCategory': updateCategory,
-      'deleteCategory': deleteCategory
+      'getCustomers': getCustomers,
+      'saveCustomer': saveCustomer,
+      'deleteCustomer': deleteCustomer,
+      'loginCustomer': loginCustomer,
+      'getActiveOrderCount': getActiveOrderCount,
+      'getOrders': getOrders,
+      'updateOrderStatus': updateOrderStatus,
+      'placeOrder': placeOrder
     };
     
     if (handlers[action]) {
@@ -446,3 +449,6 @@ function placeOrder(orderData, cartItems) {
 }
 // fix  
 // force push  
+// fix ref error  
+// fix  
+// fix handlers  
