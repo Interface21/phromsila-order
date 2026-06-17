@@ -20,25 +20,24 @@ let adminState = {
 
   async function handleAdminLogin() {
     const pwd = document.getElementById('adminPwd').value;
-    const errEl = document.getElementById('loginError');
-    if (!pwd) return;
+    if(!pwd) return Swal.fire('Error', 'Please enter password', 'error');
     
-    errEl.classList.add('d-none');
     Swal.showLoading();
     const hash = await sha256(pwd);
     
-    google.script.run.withSuccessHandler(res => {
+    google.script.run.withFailureHandler(e => {
+      Swal.close();
+      Swal.fire('Error', e.message || e.toString(), 'error');
+    }).withSuccessHandler(res => {
       if (res.success) {
         Swal.close();
         document.getElementById('view-login').style.display = 'none';
         document.getElementById('sidebar').classList.remove('d-none');
         document.getElementById('mainContent').classList.remove('d-none');
-        document.getElementById('adminPwd').value = '';
         loadAllData();
         startPolling();
       } else {
-        Swal.close();
-        errEl.classList.remove('d-none');
+        Swal.fire('Error', 'รหัสผ่านไม่ถูกต้อง', 'error');
       }
     }).adminLogin(hash);
   }

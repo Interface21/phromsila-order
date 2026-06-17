@@ -20,7 +20,17 @@ let state = {
       }
     }
     updateAuthUI();
-    switchView('view-home');
+    
+    // Always load config and data on startup
+    if (state.products.length === 0) {
+      loadStoreData();
+    }
+    
+    if (state.customer) {
+      switchView('view-home');
+    } else {
+      switchView('view-login');
+    }
   });
 
   function updateAuthUI() {
@@ -142,7 +152,11 @@ let state = {
         state.config = res.data;
         
         // Populate Header Info
-        document.getElementById('displayShopName').textContent = state.config.shop_name || 'Phromsila Shop';
+        const shopName = state.config.shop_name || 'Phromsila Shop';
+        document.getElementById('displayShopName').textContent = shopName;
+        const loginShopNameEl = document.getElementById('displayShopNameLogin');
+        if (loginShopNameEl) loginShopNameEl.textContent = shopName;
+        
         document.getElementById('displayShopPhone').textContent = state.config.mobile_no || '-';
         document.getElementById('linkShopPhone').href = state.config.mobile_no ? 'tel:' + state.config.mobile_no : '#';
         document.getElementById('displayShopLine').textContent = state.config.line_id || '-';
