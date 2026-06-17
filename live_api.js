@@ -33,25 +33,32 @@ async function apiCall(action, args) {
  */
 const google = {
   script: {
-    run: createApiProxy(null, null)
+    run: {
+      withSuccessHandler: function(onSuccess) {
+        return {
+          withFailureHandler: function(onFailure) {
+            return createApiProxy(onSuccess, onFailure);
+          },
+          ...createApiProxy(onSuccess, console.error)
+        };
+      },
+      withFailureHandler: function(onFailure) {
+        return {
+          withSuccessHandler: function(onSuccess) {
+            return createApiProxy(onSuccess, onFailure);
+          }
+        };
+      }
+    }
   }
 };
 
 function createApiProxy(onSuccess, onFailure) {
   return new Proxy({}, {
     get: function(target, prop) {
-      if (prop === 'withSuccessHandler') {
-        return function(handler) {
-          return createApiProxy(handler, onFailure);
-        };
-      }
-      if (prop === 'withFailureHandler') {
-        return function(handler) {
-          return createApiProxy(onSuccess, handler);
-        };
-      }
+      // Handle special case for URL
       if (prop === 'getScriptUrl') {
-        return () => { if (onSuccess) onSuccess(window.location.origin + window.location.pathname); };
+        return () => onSuccess(window.location.origin + window.location.pathname);
       }
       // Handle all other API functions
       return async function(...args) {
@@ -60,7 +67,6 @@ function createApiProxy(onSuccess, onFailure) {
           if (onSuccess) onSuccess(res);
         } catch(e) {
           if (onFailure) onFailure(e);
-          else console.error('API Error (Unhandled):', e);
         }
       }
     }

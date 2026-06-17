@@ -20,13 +20,6 @@ let state = {
       }
     }
     updateAuthUI();
-    
-    // Always load config and data on startup
-    if (state.products.length === 0) {
-      loadStoreData();
-    }
-    
-    // Always show home view by default
     switchView('view-home');
   });
 
@@ -90,10 +83,7 @@ let state = {
     if (phone.length < 9) return showAlert('ข้อผิดพลาด', 'กรุณาระบุเบอร์โทรศัพท์ให้ถูกต้อง', 'error');
     
     Swal.showLoading();
-    google.script.run.withFailureHandler(e => {
-      Swal.close();
-      showAlert('Error', e.message || e.toString(), 'error');
-    }).withSuccessHandler(res => {
+    google.script.run.withSuccessHandler(res => {
       Swal.close();
       if (res.success) {
         state.customer = res.data;
@@ -149,11 +139,7 @@ let state = {
         state.config = res.data;
         
         // Populate Header Info
-        const shopName = state.config.shop_name || 'Phromsila Shop';
-        document.getElementById('displayShopName').textContent = shopName;
-        const loginShopNameEl = document.getElementById('displayShopNameLogin');
-        if (loginShopNameEl) loginShopNameEl.textContent = shopName;
-        
+        document.getElementById('displayShopName').textContent = state.config.shop_name || 'Phromsila Shop';
         document.getElementById('displayShopPhone').textContent = state.config.mobile_no || '-';
         document.getElementById('linkShopPhone').href = state.config.mobile_no ? 'tel:' + state.config.mobile_no : '#';
         document.getElementById('displayShopLine').textContent = state.config.line_id || '-';
