@@ -1,0 +1,742 @@
+<script>
+  let adminState = {
+    config: null,
+    catalogs: [],
+    products: [],
+    customers: [],
+    orders: [],
+    chartInstance: null,
+    pollingTimer: null,
+    lastOrderCount: 0,
+    currentOrderTarget: null // for modal
+  };
+
+  // --- Auth & Crypto ---
+  async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function handleAdminLogin() {
+    const pwd = document.getElementById('adminPwd').value;
+    const errEl = document.getElementById('loginError');
+    if (!pwd) return;
+    
+    errEl.classList.add('d-none');
+    Swal.showLoading();
+    const hash = await sha256(pwd);
+    
+    google.script.run.withSuccessHandler(res => {
+      if (res.success) {
+        Swal.close();
+        document.getElementById('view-login').style.display = 'none';
+        document.getElementById('sidebar').classList.remove('d-none');
+        document.getElementById('mainContent').classList.remove('d-none');
+        document.getElementById('adminPwd').value = '';
+        loadAllData();
+        startPolling();
+      } else {
+        Swal.close();
+        errEl.classList.remove('d-none');
+      }
+    }).adminLogin(hash);
+  }
+
+  function goToShop() {
+    Swal.showLoading();
+    google.script.run.withSuccessHandler(url => {
+      window.top.location.href = url + '?page=customer';
+    }).getScriptUrl();
+  }
+
+  function logout() {
+    goToShop();
+  }
+
+  // --- Navigation & Core ---
+  function navTo(view) {
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    document.querySelectorAll('.main-content .view-section').forEach(el => el.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    
+    if (view === 'dashboard') renderDashboard();
+    if (view === 'orders') {
+      renderOrders();
+      document.getElementById('newOrderBadge').classList.add('d-none');
+    }
+  }
+
+  function loadAllData() {
+    google.script.run.withSuccessHandler(res => { if(res.success) { adminState.config = res.data; populateConfig(); } }).getConfig();
+    google.script.run.withSuccessHandler(res => { if(res.success) { adminState.catalogs = res.data; renderCatalogs(); } }).getCatalogs();
+    google.script.run.withSuccessHandler(res => { if(res.success) { adminState.products = res.data; renderProducts(); } }).getProducts();
+    google.script.run.withSuccessHandler(res => { if(res.success) { adminState.customers = res.data; renderCustomers(); } }).getCustomers();
+    fetchOrders(true); // initial fetch
+  }
+
+  // --- Polling for Orders ---
+  function startPolling() {
+    // Poll every 15 seconds
+    adminState.pollingTimer = setInterval(() => {
+      fetchOrders(false);
+    }, 15000);
+  }
+
+  function fetchOrders(isInitial) {
+    google.script.run.withSuccessHandler(res => {
+      if (res.success) {
+        const oldLen = adminState.orders.length;
+        adminState.orders = res.data;
+        
+        if (!isInitial && adminState.orders.length > oldLen) {
+          // New order arrived!
+          Swal.fire({
+            title: 'ออเดอร์ใหม่!',
+            text: 'มีรายการสั่งซื้อใหม่เข้ามา',
+            icon: 'info',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+          });
+          const badge = document.getElementById('newOrderBadge');
+          badge.textContent = adminState.orders.length - oldLen;
+          badge.classList.remove('d-none');
+        }
+        
+        if (document.getElementById('view-orders').classList.contains('active')) {
+          renderOrders();
+        }
+        if (document.getElementById('view-dashboard').classList.contains('active')) {
+          renderDashboard();
+        }
+      }
+    }).getOrders();
+  }
+
+  // --- Dashboard ---
+  function renderDashboard() {
+    const today = new Date().toLocaleDateString('en-GB'); 
+    const todayOrders = adminState.orders.filter(o => new Date(o.date_time).toLocaleDateString('en-GB') === today);
+    
+    const validOrders = todayOrders.filter(o => o.status !== 'cancel');
+    const totalSales = validOrders.reduce((sum, o) => sum + parseFloat(o.net_total), 0);
+    document.getElementById('dashSales').textContent = `฿${totalSales.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    document.getElementById('dashOrders').textContent = validOrders.length.toLocaleString('en-US');
+    
+    // Custom Horizontal Stacked Bar Chart
+    const rounds = ['ทั้งหมด', '09:00', '11:00', '13:00', '15:00'];
+    const statuses = ['order', 'preparing_order', 'preparing_shipment', 'shipped', 'cancel'];
+    const statusLabels = { order: 'รอรับออเดอร์', preparing_order: 'กำลังจัดเตรียม', preparing_shipment: 'รอจัดส่ง', shipped: 'เสร็จสิ้น', cancel: 'ยกเลิก' };
+    const statusColors = { order: '#4A90E2', preparing_order: '#f59e0b', preparing_shipment: '#ea580c', shipped: '#10b981', cancel: '#ef4444' };
+    
+    let html = '';
+    
+    rounds.forEach(round => {
+       const filtered = round === 'ทั้งหมด' ? todayOrders : todayOrders.filter(o => o.pickup_time === round);
+       const total = filtered.length;
+       
+       let barsHtml = '';
+       if (total === 0) {
+          barsHtml = `<div style="width: 100%; background: #f1f5f9; text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 5px 0;">ไม่มีออเดอร์</div>`;
+       } else {
+          statuses.forEach(st => {
+             const count = filtered.filter(o => o.status === st).length;
+             if (count > 0) {
+                const pct = (count / total) * 100;
+                barsHtml += `<div style="width: ${pct}%; background: ${statusColors[st]}; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 5px 0;" title="${count.toLocaleString('en-US')} ${statusLabels[st]}">${count.toLocaleString('en-US')} ${statusLabels[st]}</div>`;
+             }
+          });
+       }
+       
+       html += `
+         <div style="margin-bottom: 15px;">
+            <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 5px; color: var(--text-dark);">
+              ${round === 'ทั้งหมด' ? 'ภาพรวมรอบทั้งหมด' : 'รอบจัดส่ง ' + round} 
+              <span style="color:#64748b; font-weight:normal;">(${total.toLocaleString('en-US')} ออเดอร์)</span>
+            </div>
+            <div style="display: flex; height: 35px; border-radius: 20px; overflow: hidden; background: #f1f5f9; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+               ${barsHtml}
+            </div>
+         </div>
+       `;
+    });
+    
+    const chartContainer = document.getElementById('custom-dashboard-chart');
+    if (chartContainer) {
+       chartContainer.innerHTML = html;
+    }
+  }
+
+  function getColorForStatus(s) {
+    const map = {
+      'order': '#4A90E2',
+      'preparing_order': '#f59e0b',
+      'preparing_shipment': '#ea580c',
+      'shipped': '#10b981',
+      'cancel': '#ef4444'
+    };
+    return map[s] || '#ccc';
+  }
+
+  // --- Orders (Kanban) ---
+  function renderOrders() {
+    const filter = document.getElementById('filterRound').value;
+    
+    let filteredOrders = adminState.orders;
+    // only show today's orders by default? Or all active?
+    // Let's show all active or today.
+    const today = new Date().toLocaleDateString('en-GB');
+    filteredOrders = filteredOrders.filter(o => new Date(o.date_time).toLocaleDateString('en-GB') === today);
+    
+    if (filter !== 'all') {
+      filteredOrders = filteredOrders.filter(o => o.pickup_time === filter);
+    }
+    
+    const cols = ['order', 'preparing_order', 'preparing_shipment', 'shipped', 'cancel'];
+    cols.forEach(c => {
+      const container = document.querySelector(`#col-${c} .kanban-list`);
+      container.innerHTML = '';
+      
+      const items = filteredOrders.filter(o => o.status === c);
+      items.forEach(o => {
+        const div = document.createElement('div');
+        div.className = 'order-card glass';
+        div.innerHTML = `
+          <div style="font-weight:bold;">${o.order_no}</div>
+          <div style="font-size:0.8rem; color:var(--text-light); margin:5px 0;">
+            ${new Date(o.date_time).toLocaleTimeString('th-TH')} | ${o.pickup_time || '-'}
+          </div>
+          <div>ยอด: ฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+        `;
+        div.onclick = () => openOrderModal(o.id);
+        container.appendChild(div);
+      });
+    });
+  }
+
+  function openOrderModal(id) {
+    const o = adminState.orders.find(x => x.id === id);
+    if (!o) return;
+    adminState.currentOrderTarget = o.id;
+    
+    document.getElementById('ord_no').textContent = `คำสั่งซื้อ: ${o.order_no}`;
+    
+    const cust = adminState.customers.find(c => c.id === o.customer_id);
+    const custName = cust ? cust.name : 'ไม่ระบุ';
+    
+    document.getElementById('ord_info').innerHTML = `
+      ลูกค้า: ${custName} <br>
+      รูปแบบ: ${o.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับที่ร้าน'} <br>
+      ${o.pickup_time === '-' ? '' : 'รอบ: ' + o.pickup_time + '<br>'}
+      วิธีชำระเงิน: ${o.payment}
+      ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;">เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
+    `;
+    
+    let itemsHtml = '<table class="glass-table"><thead><tr><th>รายการ</th><th>จำนวน</th><th>ราคา</th></tr></thead><tbody>';
+    o.items.forEach(item => {
+      const p = adminState.products.find(prod => prod.id === item.product_id);
+      const unit = p ? (p.unit_name || 'ชิ้น') : 'ชิ้น';
+      itemsHtml += `<tr><td>${p ? p.name : 'ไม่ระบุ'}</td><td>${item.quantity} ${unit}</td><td>฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
+    });
+    itemsHtml += '</tbody></table>';
+    
+    document.getElementById('ord_items').innerHTML = itemsHtml;
+    document.getElementById('ord_total').textContent = `ยอดสุทธิ: ฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    
+    // Reset all buttons to gray
+    const statuses = ['order', 'preparing_order', 'preparing_shipment', 'shipped', 'cancel'];
+    statuses.forEach(s => {
+      const btn = document.getElementById('btnStatus_' + s);
+      if(btn) {
+         btn.style.background = '#e2e8f0';
+         btn.style.color = '#475569';
+         btn.style.boxShadow = 'none';
+         btn.style.border = 'none';
+      }
+    });
+    // Highlight current status
+    const activeBtn = document.getElementById('btnStatus_' + o.status);
+    if (activeBtn) {
+       activeBtn.style.color = '#ffffff';
+       if (o.status === 'order') activeBtn.style.background = '#4A90E2';
+       else if (o.status === 'preparing_order') activeBtn.style.background = '#f59e0b';
+       else if (o.status === 'preparing_shipment') activeBtn.style.background = '#ea580c';
+       else if (o.status === 'shipped') activeBtn.style.background = '#10b981';
+       else if (o.status === 'cancel') activeBtn.style.background = '#ef4444';
+    }
+    
+    // Lock buttons if finished or canceled
+    const isLocked = o.status === 'shipped' || o.status === 'cancel';
+    statuses.forEach(s => {
+      const btn = document.getElementById('btnStatus_' + s);
+      if(btn) {
+         btn.disabled = isLocked;
+         if (isLocked) {
+           btn.style.opacity = '0.6';
+           btn.style.cursor = 'not-allowed';
+         } else {
+           btn.style.opacity = '1';
+           btn.style.cursor = 'pointer';
+         }
+      }
+    });
+    
+    document.getElementById('modal-order').classList.add('active');
+  }
+
+  function changeOrderStatus(newStatus) {
+    if (!newStatus) return;
+    if (newStatus === 'cancel') {
+      Swal.fire({
+        title: 'ระบุเหตุผลการยกเลิก',
+        input: 'text',
+        inputPlaceholder: 'ใส่เหตุผลที่นี่...',
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยันยกเลิก',
+        cancelButtonText: 'ปิด',
+        preConfirm: (reason) => {
+          if (!reason) {
+            Swal.showValidationMessage('กรุณาระบุเหตุผล');
+          }
+          return reason;
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          executeChangeStatus(newStatus, result.value);
+        }
+      });
+    } else {
+      executeChangeStatus(newStatus, '');
+    }
+  }
+
+  function executeChangeStatus(newStatus, reason) {
+    Swal.showLoading();
+    google.script.run.withSuccessHandler(res => {
+      Swal.close();
+      if(res.success) {
+        closeModal('modal-order');
+        fetchOrders(true); // reload
+      } else {
+        Swal.fire('ข้อผิดพลาด', 'อัปเดตไม่สำเร็จ', 'error');
+      }
+    }).updateOrderStatus(adminState.currentOrderTarget, newStatus, reason);
+  }
+
+  // --- Catalogs ---
+  function renderCatalogs() {
+    const tbody = document.getElementById('catalogTableBody');
+    tbody.innerHTML = '';
+    adminState.catalogPage = adminState.catalogPage || 1;
+    const limit = 10;
+    const startIndex = (adminState.catalogPage - 1) * limit;
+    const displayed = adminState.catalogs.slice(startIndex, startIndex + limit);
+    
+    displayed.forEach(c => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${c.name}</td>
+          <td>
+            <label class="switch">
+              <input type="checkbox" ${c.active ? 'checked' : ''} onchange="toggleCatalogActive('${c.id}', this)">
+              <span class="slider"></span>
+            </label>
+          </td>
+          <td>
+            <button class="btn btn-glass" onclick="editCatalog('${c.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger" onclick="deleteCatalog('${c.id}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+    
+    // Pagination
+    const totalPages = Math.ceil(adminState.catalogs.length / limit);
+    let pageHtml = '';
+    for(let i=1; i<=totalPages; i++) {
+      pageHtml += `<button class="btn ${i === adminState.catalogPage ? 'btn-primary' : 'btn-glass'}" style="padding:5px 10px; margin: 0 2px;" onclick="adminState.catalogPage=${i}; renderCatalogs()">${i}</button>`;
+    }
+    document.getElementById('catalogPagination').innerHTML = totalPages > 1 ? pageHtml : '';
+    
+    // populate select in product modal
+    const opts = adminState.catalogs.filter(c => c.active).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    document.getElementById('prod_catalog_id').innerHTML = opts;
+    
+    // populate filter dropdown
+    const filterSelect = document.getElementById('filterProductCatalog');
+    const currentFilter = filterSelect.value;
+    filterSelect.innerHTML = `<option value="all">ทุกหมวดหมู่</option>` + opts;
+    if (adminState.catalogs.find(c => c.id === currentFilter)) {
+      filterSelect.value = currentFilter;
+    } else {
+      filterSelect.value = 'all';
+    }
+  }
+
+  function openCatalogModal() {
+    document.getElementById('cat_id').value = '';
+    document.getElementById('cat_name').value = '';
+    document.getElementById('cat_active').value = 'true';
+    document.getElementById('modal-catalog').classList.add('active');
+  }
+
+  function editCatalog(id) {
+    const c = adminState.catalogs.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('cat_id').value = c.id;
+    document.getElementById('cat_name').value = c.name;
+    document.getElementById('cat_active').checked = c.active;
+    document.getElementById('modal-catalog').classList.add('active');
+  }
+
+  function saveCatalog() {
+    const data = {
+      id: document.getElementById('cat_id').value,
+      name: document.getElementById('cat_name').value,
+      active: document.getElementById('cat_active').checked
+    };
+    Swal.showLoading();
+    google.script.run.withSuccessHandler(res => {
+      Swal.close();
+      if(res.success) {
+        closeModal('modal-catalog');
+        google.script.run.withSuccessHandler(r => { adminState.catalogs = r.data; renderCatalogs(); }).getCatalogs();
+      }
+    }).saveCatalog(data);
+  }
+
+  function deleteCatalog(id) {
+    if(!confirm('คุณแน่ใจหรือไม่ที่จะลบรายการนี้?')) return;
+    Swal.showLoading();
+    google.script.run.withSuccessHandler(res => {
+      Swal.close();
+      if(res.success) {
+        google.script.run.withSuccessHandler(r => { adminState.catalogs = r.data; renderCatalogs(); }).getCatalogs();
+      }
+    }).deleteCatalog(id);
+  }
+
+  // --- Products ---
+  function renderProducts() {
+    const tbody = document.getElementById('productTableBody');
+    tbody.innerHTML = '';
+    
+    const filterCat = document.getElementById('filterProductCatalog').value;
+    const searchQ = document.getElementById('searchProductAdmin') ? document.getElementById('searchProductAdmin').value.toLowerCase() : '';
+    let filteredProducts = adminState.products;
+    
+    if (searchQ) {
+      filteredProducts = filteredProducts.filter(p => p.name.toLowerCase().includes(searchQ));
+    }
+    if (filterCat !== 'all') {
+      filteredProducts = filteredProducts.filter(p => p.catalog_id === filterCat);
+    }
+    
+    adminState.productPage = adminState.productPage || 1;
+    const limit = 10;
+    const startIndex = (adminState.productPage - 1) * limit;
+    const displayed = filteredProducts.slice(startIndex, startIndex + limit);
+    
+    displayed.forEach(p => {
+      const cat = adminState.catalogs.find(c => c.id === p.catalog_id);
+      const unit = p.unit_name || 'ชิ้น';
+      const imgHtml = p.image ? `<img src="${p.image}" width="40" height="40" style="border-radius:8px; object-fit:cover;">` : `<div style="width:40px; height:40px; border-radius:8px; background:#ddd; display:flex; align-items:center; justify-content:center; color:#888;"><i class="fas fa-image"></i></div>`;
+      tbody.innerHTML += `
+        <tr>
+          <td>${imgHtml}</td>
+          <td>${p.name}</td>
+          <td>${cat ? cat.name : '-'}</td>
+          <td>฿${parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}/${unit}</td>
+          <td>${p.promo_price > 0 ? '฿'+parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})+'/'+unit : '-'}</td>
+          <td>
+            <label class="switch">
+              <input type="checkbox" ${p.active ? 'checked' : ''} onchange="toggleProductActive('${p.id}', this)">
+              <span class="slider"></span>
+            </label>
+          </td>
+          <td>
+            <button class="btn btn-glass" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+    
+    // Pagination
+    const totalPages = Math.ceil(filteredProducts.length / limit);
+    let pageHtml = '';
+    for(let i=1; i<=totalPages; i++) {
+      pageHtml += `<button class="btn ${i === adminState.productPage ? 'btn-primary' : 'btn-glass'}" style="padding:5px 10px; margin: 0 2px;" onclick="adminState.productPage=${i}; renderProducts()">${i}</button>`;
+    }
+    const pagDiv = document.getElementById('productPagination');
+    if(pagDiv) pagDiv.innerHTML = totalPages > 1 ? pageHtml : '';
+  }
+
+  function openProductModal() {
+    document.getElementById('prod_id').value = '';
+    
+    const filterCat = document.getElementById('filterProductCatalog').value;
+    if (filterCat !== 'all') {
+      document.getElementById('prod_catalog_id').value = filterCat;
+    }
+    
+    document.getElementById('prod_name').value = '';
+    document.getElementById('prod_price').value = '';
+    document.getElementById('prod_promo_price').value = '0';
+    document.getElementById('prod_promo_expire').value = '';
+    document.getElementById('prod_image_url').value = '';
+    if (document.getElementById('prod_image_file')) document.getElementById('prod_image_file').value = '';
+    document.getElementById('img_preview').innerHTML = '';
+    document.getElementById('modal-product').classList.add('active');
+  }
+
+  function editProduct(id) {
+    const p = adminState.products.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('prod_id').value = p.id;
+    document.getElementById('prod_catalog_id').value = p.catalog_id;
+    document.getElementById('prod_name').value = p.name;
+    document.getElementById('prod_price').value = p.price;
+    document.getElementById('prod_promo_price').value = p.promo_price;
+    if (p.promo_expire) {
+      const d = new Date(p.promo_expire);
+      if (!isNaN(d.getTime())) {
+        document.getElementById('prod_promo_expire').value = p.promo_expire.split('T')[0];
+      } else {
+        document.getElementById('prod_promo_expire').value = '';
+      }
+    }
+    document.getElementById('prod_active').checked = p.active;
+    document.getElementById('prod_image_url').value = p.image;
+    document.getElementById('img_preview').innerHTML = `<img src="${p.image}" width="100" style="border-radius:8px;">`;
+    document.getElementById('modal-product').classList.add('active');
+  }
+
+  function saveProduct() {
+    const fileInput = document.getElementById('prod_image_file');
+    if (fileInput.files.length > 0) {
+      // Upload image first
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        Swal.showLoading();
+        google.script.run.withSuccessHandler(url => {
+          if(url.error) { Swal.fire('ข้อผิดพลาด', 'อัปโหลดรูปภาพไม่สำเร็จ', 'error'); return; }
+          document.getElementById('prod_image_url').value = url;
+          submitProductData();
+        }).uploadFileToDrive(reader.result, file.name);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      submitProductData();
+    }
+  }
+
+  function submitProductData() {
+    const data = {
+      id: document.getElementById('prod_id').value,
+      catalog_id: document.getElementById('prod_catalog_id').value,
+      name: document.getElementById('prod_name').value,
+      price: document.getElementById('prod_price').value,
+      promo_price: document.getElementById('prod_promo_price').value || 0,
+      promo_expire: document.getElementById('prod_promo_expire').value || '',
+      image: document.getElementById('prod_image_url').value,
+      active: document.getElementById('prod_active').checked,
+      sku_code: '',
+      unit_name: 'ชิ้น'
+    };
+    Swal.showLoading();
+    google.script.run.withSuccessHandler(res => {
+      Swal.close();
+      if(res.success) {
+        closeModal('modal-product');
+        google.script.run.withSuccessHandler(r => { adminState.products = r.data; renderProducts(); }).getProducts();
+      }
+    }).saveProduct(data);
+  }
+
+  function deleteProduct(id) {
+    if(!confirm('คุณแน่ใจหรือไม่ที่จะลบสินค้านี้?')) return;
+    Swal.showLoading();
+    google.script.run.withSuccessHandler(res => {
+      Swal.close();
+      if(res.success) {
+        google.script.run.withSuccessHandler(r => { adminState.products = r.data; renderProducts(); }).getProducts();
+      }
+    }).deleteProduct(id);
+  }
+
+  // --- Customers ---
+  function renderCustomers() {
+    const tbody = document.getElementById('customerTableBody');
+    tbody.innerHTML = '';
+    
+    const searchQ = document.getElementById('searchCustomerAdmin') ? document.getElementById('searchCustomerAdmin').value.toLowerCase() : '';
+    let filteredCustomers = adminState.customers;
+    
+    if (searchQ) {
+      filteredCustomers = filteredCustomers.filter(c => 
+        (c.name && c.name.toLowerCase().includes(searchQ)) || 
+        (c.mobile_no && c.mobile_no.toLowerCase().includes(searchQ))
+      );
+    }
+    
+    adminState.customerPage = adminState.customerPage || 1;
+    const limit = 10;
+    const startIndex = (adminState.customerPage - 1) * limit;
+    const displayed = filteredCustomers.slice(startIndex, startIndex + limit);
+    
+    displayed.forEach(c => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${c.name}</td>
+          <td>${c.mobile_no}</td>
+          <td>${c.delivery_address || '-'}</td>
+          <td>
+            <label class="switch">
+              <input type="checkbox" ${c.active ? 'checked' : ''} onchange="toggleCustomerActive('${c.id}', this)">
+              <span class="slider"></span>
+            </label>
+          </td>
+          <td>
+            <button class="btn btn-glass" onclick="editCustomer('${c.id}')"><i class="fas fa-edit"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+    
+    // Pagination
+    const totalPages = Math.ceil(filteredCustomers.length / limit);
+    let pageHtml = '';
+    for(let i=1; i<=totalPages; i++) {
+      pageHtml += `<button class="btn ${i === adminState.customerPage ? 'btn-primary' : 'btn-glass'}" style="padding:5px 10px; margin: 0 2px;" onclick="adminState.customerPage=${i}; renderCustomers()">${i}</button>`;
+    }
+    const pagDiv = document.getElementById('customerPagination');
+    if(pagDiv) pagDiv.innerHTML = totalPages > 1 ? pageHtml : '';
+  }
+
+  function editCustomer(id) {
+    const c = adminState.customers.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('cust_id').value = c.id;
+    document.getElementById('cust_name').value = c.name;
+    document.getElementById('cust_phone').value = c.mobile_no;
+    document.getElementById('cust_address').value = c.delivery_address || '';
+    document.getElementById('cust_banned').checked = !c.active; // banned = not active
+    document.getElementById('modal-customer').classList.add('active');
+  }
+
+  function saveCustomer() {
+    const data = {
+      id: document.getElementById('cust_id').value,
+      name: document.getElementById('cust_name').value,
+      mobile_no: document.getElementById('cust_phone').value,
+      delivery_address: document.getElementById('cust_address').value,
+      active: !document.getElementById('cust_banned').checked
+    };
+    
+    // Merge with existing data
+    const c = adminState.customers.find(x => x.id === data.id);
+    if (c) {
+      data.delivery_count_accumulate = c.delivery_count_accumulate || 0;
+      data.delivery_count_usage = c.delivery_count_usage || 0;
+    }
+
+    Swal.showLoading();
+    google.script.run.withSuccessHandler(res => {
+      Swal.close();
+      if(res.success) {
+        closeModal('modal-customer');
+        google.script.run.withSuccessHandler(r => { adminState.customers = r.data; renderCustomers(); }).getCustomers();
+      }
+    }).saveCustomer(data);
+  }
+
+  function toggleCustomerActive(id, el) {
+    const c = adminState.customers.find(x => x.id === id);
+    if (!c) return;
+    c.active = el.checked;
+    google.script.run.saveCustomer(c);
+  }
+
+  function toggleProductActive(id, el) {
+    const p = adminState.products.find(x => x.id === id);
+    if (!p) return;
+    p.active = el.checked;
+    google.script.run.saveProduct(p);
+  }
+
+  function toggleCatalogActive(id, el) {
+    const c = adminState.catalogs.find(x => x.id === id);
+    if (!c) return;
+    c.active = el.checked;
+    google.script.run.saveCatalog(c);
+  }
+
+  // --- Config ---
+  function populateConfig() {
+    const c = adminState.config;
+    if(!c) return;
+    document.getElementById('cfg_shop_name').value = c.shop_name || '';
+    document.getElementById('cfg_mobile_no').value = c.mobile_no || '';
+    document.getElementById('cfg_line_id').value = c.line_id || '';
+    document.getElementById('cfg_delivery_charge').value = c.delivery_charge || 0;
+    document.getElementById('cfg_free_delivery_threshold').value = c.free_delivery_threshold || 0;
+    document.getElementById('cfg_close_day').value = c.close_day || 0;
+  }
+
+  async function saveConfig() {
+    const newPwd = document.getElementById('cfg_new_pwd').value;
+    let pwdHash = null;
+    if (newPwd) {
+      pwdHash = await sha256(newPwd);
+    }
+    
+    const data = {
+      shop_name: document.getElementById('cfg_shop_name').value,
+      mobile_no: document.getElementById('cfg_mobile_no').value,
+      line_id: document.getElementById('cfg_line_id').value,
+      delivery_charge: document.getElementById('cfg_delivery_charge').value,
+      free_delivery_threshold: document.getElementById('cfg_free_delivery_threshold').value,
+      close_day: document.getElementById('cfg_close_day').value,
+      pwd: adminState.config.pwd,
+      delivery_count: adminState.config.delivery_count,
+      coupon_discount: adminState.config.coupon_discount
+    };
+    
+    Swal.showLoading();
+    google.script.run.withSuccessHandler(res => {
+      if(res.success) {
+        Swal.fire('สำเร็จ', 'บันทึกการตั้งค่าเรียบร้อยแล้ว', 'success');
+        document.getElementById('cfg_new_pwd').value = '';
+        google.script.run.withSuccessHandler(r => { if(r.success) adminState.config = r.data; }).getConfig();
+      } else {
+        Swal.fire('ข้อผิดพลาด', 'บันทึกไม่สำเร็จ', 'error');
+      }
+    }).updateConfig(data, pwdHash);
+  }
+
+  // --- Utils ---
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
+  // --- Events ---
+  document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      const activeModal = document.querySelector('.custom-modal.active');
+      if (activeModal) {
+        // Prevent default form submission if any
+        e.preventDefault();
+        const primaryBtn = activeModal.querySelector('.btn-primary');
+        if (primaryBtn) primaryBtn.click();
+      }
+    }
+  });
+
+</script>
