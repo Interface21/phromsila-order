@@ -349,9 +349,12 @@
   
   <!-- ================= TRACKING VIEW ================= -->
   <div id="view-tracking" class="view-section" style="padding: 20px;">
-    <div style="display: flex; align-items: center; margin-bottom: 20px; gap: 15px;">
-      <button class="btn btn-glass" onclick="switchView('view-home')"><i class="fas fa-arrow-left"></i></button>
-      <h2>ติดตามสถานะการสั่งซื้อ</h2>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <button class="btn btn-glass" onclick="switchView('view-home')"><i class="fas fa-arrow-left"></i></button>
+        <h2 style="margin: 0;">ติดตามสถานะการสั่งซื้อ</h2>
+      </div>
+      <button class="btn btn-glass" onclick="loadOrders()" title="รีเฟรช"><i class="fas fa-sync-alt"></i></button>
     </div>
     <div id="ordersContainer">
       <div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
@@ -377,8 +380,8 @@
 
 </div>
 
-  <script src="api.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script src="api.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 
 </body>
 </html>

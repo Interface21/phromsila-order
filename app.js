@@ -41,17 +41,15 @@ let state = {
       google.script.run.withSuccessHandler(count => {
         const btn = document.getElementById('btnMyOrders');
         const text = document.getElementById('activeOrdersText');
+        text.textContent = count + " ";
         if (count > 0) {
           btn.className = "btn btn-warning";
           btn.style.color = "#ffffff";
-          text.textContent = count + " ออเดอร์ ";
-          btn.classList.remove('d-none');
         } else {
           btn.className = "btn btn-glass";
           btn.style.color = "";
-          text.textContent = "";
-          btn.classList.remove('d-none');
         }
+        btn.classList.remove('d-none');
       }).getActiveOrderCount(state.customer.id);
       
     } else {
@@ -587,7 +585,9 @@ let state = {
               title: 'สั่งซื้อสำเร็จ!',
               text: `หมายเลขคำสั่งซื้อ: ${res.orderNo}`,
               icon: 'success',
-              confirmButtonColor: '#4A90E2',
+              timer: 5000,
+              timerProgressBar: true,
+              showConfirmButton: false,
               customClass: { popup: 'glass-panel' }
             }).then(() => {
               state.cart = [];
