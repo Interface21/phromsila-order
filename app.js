@@ -168,9 +168,8 @@ let state = {
       if (oldStatus && oldStatus !== o.status) {
         let title = '';
         if (o.status === 'preparing_order') title = 'กำลังจัดเตรียมสินค้า';
-        else if (o.status === 'ready_for_pickup') title = 'สินค้าพร้อมรับแล้ว';
-        else if (o.status === 'shipped') title = 'จัดส่งสินค้าแล้ว';
-        else if (o.status === 'completed') title = 'เสร็จสิ้น';
+        else if (o.status === 'preparing_shipment') title = 'รอจัดส่ง/รับสินค้า';
+        else if (o.status === 'shipped') title = 'จัดส่ง/รับสินค้าเรียบร้อยแล้ว';
         else if (o.status === 'cancel') title = 'คำสั่งซื้อถูกยกเลิก';
         
         if (title) {
