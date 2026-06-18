@@ -434,7 +434,7 @@ let adminState = {
       ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;">เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
     `;
     
-    let itemsHtml = '<table class="glass-table"><thead><tr><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th style="width: 40px;"></th></tr></thead><tbody>';
+    let itemsHtml = '<table class="glass-table"><thead><tr><th style="width: 40px; text-align:center;"></th><th>รายการ</th><th>จำนวน</th><th style="text-align:right;">ราคา</th></tr></thead><tbody>';
     o.items.forEach(item => {
       const p = adminState.products.find(prod => prod.id === item.product_id);
       const unit = p ? (p.unit_name || 'ชิ้น') : 'ชิ้น';
@@ -442,12 +442,23 @@ let adminState = {
       const canDelete = o.status !== 'shipped' && o.status !== 'cancel';
       const delBtn = canDelete ? `<button style="background: transparent; padding: 4px 8px; font-size: 0.9rem; border-radius: 6px; border: none; cursor: pointer; color: #94a3b8; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'; this.style.background='#fee2e2';" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent';" onclick="removeOrderItem('${o.id}', '${item.id}', '${p ? p.name : 'สินค้านี้'}')" title="ลบรายการนี้"><i class="fas fa-trash-alt"></i></button>` : '';
       
-      itemsHtml += `<tr><td>${p ? p.name : 'ไม่ระบุ'}</td><td>${item.quantity} ${unit}</td><td>฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td style="text-align:right;">${delBtn}</td></tr>`;
+      itemsHtml += `<tr><td style="text-align:center;">${delBtn}</td><td>${p ? p.name : 'ไม่ระบุ'}</td><td>${item.quantity} ${unit}</td><td style="text-align:right;">฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
     });
     itemsHtml += '</tbody></table>';
     
     document.getElementById('ord_items').innerHTML = itemsHtml;
     
+    let discountHtml = '';
+    const discount = parseFloat(o.coupon_discount || 0);
+    if (discount > 0) {
+      discountHtml = `
+        <div style="display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 8px; width: 250px;">
+          <span>ส่วนลดรวม:</span>
+          <span style="width: 90px; text-align: right; color: #ef4444;">-฿${discount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+        </div>
+      `;
+    }
+
     let summaryHtml = `
       <div style="font-size: 0.95rem; color: var(--text-light); text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
         <div style="display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 8px; width: 250px;">
@@ -458,6 +469,7 @@ let adminState = {
           <span>ค่าจัดส่ง:</span>
           <span style="width: 90px; text-align: right;">${parseFloat(o.delivery_fee || 0) > 0 ? '฿' + parseFloat(o.delivery_fee).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '<span style="color:#10b981;">ส่งฟรี!</span>'}</span>
         </div>
+        ${discountHtml}
         <div style="display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 5px; color: var(--primary); font-weight: bold; font-size: 1.15rem; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px; width: 250px;">
           <span>ยอดสุทธิ:</span>
           <span style="width: 90px; text-align: right;">฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
