@@ -698,7 +698,11 @@ let adminState = {
     document.getElementById('cfg_line_id').value = c.line_id || '';
     document.getElementById('cfg_delivery_charge').value = c.delivery_charge || 0;
     document.getElementById('cfg_free_delivery_threshold').value = c.free_delivery_threshold || 0;
-    document.getElementById('cfg_close_day').value = c.close_day || 0;
+    
+    const closeDays = String(c.close_day || '').split(',');
+    document.querySelectorAll('.chk-close-day').forEach(chk => {
+      chk.checked = closeDays.includes(chk.value);
+    });
   }
 
   async function saveConfig() {
@@ -708,13 +712,15 @@ let adminState = {
       pwdHash = await sha256(newPwd);
     }
     
+    const selectedDays = Array.from(document.querySelectorAll('.chk-close-day:checked')).map(chk => chk.value).join(',');
+
     const data = {
       shop_name: document.getElementById('cfg_shop_name').value,
       mobile_no: document.getElementById('cfg_mobile_no').value,
       line_id: document.getElementById('cfg_line_id').value,
       delivery_charge: document.getElementById('cfg_delivery_charge').value,
       free_delivery_threshold: document.getElementById('cfg_free_delivery_threshold').value,
-      close_day: document.getElementById('cfg_close_day').value,
+      close_day: selectedDays,
       pwd: adminState.config.pwd,
       delivery_count: adminState.config.delivery_count,
       coupon_discount: adminState.config.coupon_discount
