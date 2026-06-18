@@ -125,7 +125,7 @@ function getSheetDataAsObjects(sheetName) {
         // Convert to local ISO string equivalent, ignoring timezone offset to keep exact date/time
         val = new Date(val.getTime() - (val.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
       }
-      obj[headers[j]] = val;
+      obj[String(headers[j]).trim()] = val;
     }
     // Add row index for updating later
     obj._rowIndex = i + 1;

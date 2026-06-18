@@ -62,6 +62,14 @@ let state = {
         btn.classList.remove('d-none');
       }).getActiveOrderCount(state.customer.id);
       
+      // Refresh customer data silently to pick up DB changes
+      google.script.run.withSuccessHandler(cRes => {
+        if (cRes.success) {
+          state.customer = cRes.data;
+          localStorage.setItem('phromsila_customer', JSON.stringify(cRes.data));
+        }
+      }).loginCustomer(state.customer.mobile_no);
+      
       loadCustomerCoupons();
       startNotificationPolling();
     } else {
