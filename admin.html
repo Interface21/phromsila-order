@@ -409,7 +409,7 @@
 <!-- Modals -->
 
 <!-- Catalog Modal -->
-<div class="custom-modal" id="modal-catalog">
+<div class="custom-modal" id="modal-catalog" onclick="if(event.target === this) closeModal(this.id)">
   <div class="glass-panel modal-content">
     <h3>รายละเอียดหมวดหมู่</h3>
     <input type="hidden" id="cat_id">
@@ -432,7 +432,7 @@
 </div>
 
 <!-- Product Modal -->
-<div class="custom-modal" id="modal-product">
+<div class="custom-modal" id="modal-product" onclick="if(event.target === this) closeModal(this.id)">
   <div class="glass-panel modal-content">
     <h3>รายละเอียดสินค้า</h3>
     <input type="hidden" id="prod_id">
@@ -480,7 +480,7 @@
 </div>
 
 <!-- Order Detail Modal -->
-<div class="custom-modal" id="modal-order">
+<div class="custom-modal" id="modal-order" onclick="if(event.target === this) closeModal(this.id)">
   <div class="glass-panel modal-content" style="width: 780px; max-width: 95%; position: relative;">
     <button onclick="closeModal('modal-order')" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); z-index: 20;"><i class="fas fa-times"></i></button>
     <div style="position: sticky; top: -30px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 10; margin: -30px -30px 15px -30px; padding: 30px 30px 15px 30px; border-bottom: 1px solid rgba(0,0,0,0.05); border-radius: 15px 15px 0 0;">
@@ -496,18 +496,18 @@
     <div class="input-group">
       <label>อัปเดตสถานะ</label>
       <div style="display:flex; gap:5px; flex-wrap:wrap;">
-        <button id="btnStatus_order" class="btn btn-primary" style="flex:1; padding: 8px; font-size:0.85rem;" onclick="changeOrderStatus('order')">รับคำสั่งซื้อ</button>
-        <button id="btnStatus_preparing_order" class="btn btn-primary" style="flex:1; padding: 8px; font-size:0.85rem;" onclick="changeOrderStatus('preparing_order')">จัดเตรียม</button>
-        <button id="btnStatus_preparing_shipment" class="btn btn-primary" style="flex:1; padding: 8px; font-size:0.85rem;" onclick="changeOrderStatus('preparing_shipment')">รอจัดส่ง/รับ</button>
-        <button id="btnStatus_shipped" class="btn btn-primary" style="flex:1; padding: 8px; font-size:0.85rem;" onclick="changeOrderStatus('shipped')">เสร็จสิ้น</button>
-        <button id="btnStatus_cancel" class="btn btn-danger" style="flex:1; padding: 8px; font-size:0.85rem;" onclick="changeOrderStatus('cancel')">ยกเลิก</button>
+        <button id="btnStatus_order" class="btn btn-primary" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('order')"><i class="fas fa-clipboard-check fa-lg" style="margin-bottom:5px; display:block;"></i>รับคำสั่งซื้อ</button>
+        <button id="btnStatus_preparing_order" class="btn btn-primary" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('preparing_order')"><i class="fas fa-box-open fa-lg" style="margin-bottom:5px; display:block;"></i>จัดเตรียม</button>
+        <button id="btnStatus_preparing_shipment" class="btn btn-primary" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('preparing_shipment')"><i class="fas fa-motorcycle fa-lg" style="margin-bottom:5px; display:block;"></i>รอจัดส่ง/รับ</button>
+        <button id="btnStatus_shipped" class="btn btn-primary" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('shipped')"><i class="fas fa-check-circle fa-lg" style="margin-bottom:5px; display:block;"></i>เสร็จสิ้น</button>
+        <button id="btnStatus_cancel" class="btn btn-danger" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('cancel')"><i class="fas fa-times-circle fa-lg" style="margin-bottom:5px; display:block;"></i>ยกเลิก</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Customer Modal -->
-<div class="custom-modal" id="modal-customer">
+<div class="custom-modal" id="modal-customer" onclick="if(event.target === this) closeModal(this.id)">
   <div class="glass-panel modal-content">
     <h3>รายละเอียดลูกค้า</h3>
     <input type="hidden" id="cust_id">
@@ -537,8 +537,8 @@
   </div>
 </div>
 
-  <script src="api.js?v=22"></script>
-  <script src="admin.js?v=23"></script>
+  <script src="api.js?v=23"></script>
+  <script src="admin.js?v=24"></script>
 
 </body>
 </html>

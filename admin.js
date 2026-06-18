@@ -441,12 +441,25 @@ let adminState = {
     const custPhone = cust && cust.mobile_no ? `<span class="badge badge-order" style="margin-left:5px; display:inline-flex; align-items:center; gap:4px; font-weight:normal;"><i class="fas fa-phone-alt"></i> ${cust.mobile_no}</span>` : '';
     const deliveryAddr = o.pickup_type === 'delivery' ? `<br>ที่อยู่จัดส่ง: ${cust ? (cust.delivery_address || 'ไม่ระบุ') : 'ไม่ระบุ'}` : '';
     
+    const isDelivery = o.pickup_type === 'delivery';
+    const typeIcon = isDelivery ? '<i class="fas fa-motorcycle fa-3x" style="color: var(--primary);"></i>' : '<i class="fas fa-store fa-3x" style="color: #10b981;"></i>';
+    const typeText = isDelivery ? '<strong style="color: var(--primary); font-size: 1.2rem;">จัดส่งถึงที่</strong>' : '<strong style="color: #10b981; font-size: 1.2rem;">รับที่ร้าน</strong>';
+    const timeText = o.pickup_time !== '-' ? `<div style="font-size: 1.1rem; font-weight: bold; margin-top: 5px;">รอบ: ${o.pickup_time}</div>` : '';
+    
     document.getElementById('ord_info').innerHTML = `
-      ลูกค้า: ${custName} ${custPhone} <br>
-      รูปแบบ: ${o.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับที่ร้าน'} ${deliveryAddr} <br>
-      ${o.pickup_time === '-' ? '' : 'รอบ: ' + o.pickup_time + '<br>'}
-      วิธีชำระเงิน: ${paymentText}
-      ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;">เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
+      <div style="display: grid; grid-template-columns: 1fr 200px; gap: 20px;">
+        <div style="line-height: 1.6;">
+          ลูกค้า: <strong>${custName}</strong> ${custPhone} <br>
+          ${isDelivery ? 'ที่อยู่จัดส่ง: ' + (cust && cust.delivery_address ? cust.delivery_address : 'ไม่ระบุ') + '<br>' : ''}
+          วิธีชำระเงิน: ${paymentText}
+          ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;"><i class="fas fa-exclamation-circle"></i> เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">
+          ${typeIcon}
+          <div style="margin-top: 10px;">${typeText}</div>
+          ${timeText}
+        </div>
+      </div>
     `;
     
     let itemsHtml = '<table class="glass-table"><thead><tr><th style="width: 40px; text-align:center;"></th><th>รายการ</th><th>จำนวน</th><th style="text-align:right;">ราคา</th></tr></thead><tbody>';
