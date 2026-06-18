@@ -73,12 +73,39 @@ let adminState = {
     fetchOrders(true); // initial fetch
   }
 
-  // --- Polling for Orders ---
-  function startPolling() {
-    // Poll every 15 seconds
-    adminState.pollingTimer = setInterval(() => {
+  // --- Smart Polling for Orders ---
+  let isAdminPageVisible = true;
+  let adminPollInterval = 15000;
+  
+  document.addEventListener('visibilitychange', () => {
+    isAdminPageVisible = !document.hidden;
+    if (isAdminPageVisible && !document.getElementById('view-login').classList.contains('active') && !document.getElementById('view-login').style.display) {
+      // Fetch immediately if logged in and returning to tab
       fetchOrders(false);
-    }, 15000);
+    }
+  });
+
+  function startPolling() {
+    stopPolling();
+    scheduleNextAdminPoll();
+  }
+  
+  function stopPolling() {
+    if (adminState.pollingTimer) clearTimeout(adminState.pollingTimer);
+    adminState.pollingTimer = null;
+  }
+  
+  function scheduleNextAdminPoll() {
+    stopPolling();
+    adminState.pollingTimer = setTimeout(() => {
+      adminPollInterval = isAdminPageVisible ? 15000 : 3 * 60 * 1000;
+      
+      if (isAdminPageVisible) {
+        fetchOrders(false);
+      }
+      
+      scheduleNextAdminPoll();
+    }, adminPollInterval);
   }
 
   function fetchOrders(isInitial) {
