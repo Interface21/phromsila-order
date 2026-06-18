@@ -806,7 +806,7 @@ let adminState = {
     document.getElementById('cfg_delivery_charge').value = c.delivery_charge || 0;
     document.getElementById('cfg_free_delivery_threshold').value = c.free_delivery_threshold || 0;
     
-    const closeDays = String(c.close_day || '').split(',');
+    const closeDays = String(c.close_day != null ? c.close_day : '').split(',');
     document.querySelectorAll('.chk-close-day').forEach(chk => {
       chk.checked = closeDays.includes(chk.value);
     });
