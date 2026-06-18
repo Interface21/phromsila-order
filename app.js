@@ -507,7 +507,28 @@ let state = {
   }
 
   function calculateTotal() {
-    const pickupType = document.getElementById('pickupType').value;
+    const pickupTypeSelect = document.getElementById('pickupType');
+    const warningEl = document.getElementById('lateDeliveryWarning');
+    const now = new Date();
+    const currentTimeVal = now.getHours() + (now.getMinutes() / 60);
+
+    if (currentTimeVal >= 14) {
+      Array.from(pickupTypeSelect.options).forEach(opt => {
+        if (opt.value === 'delivery') opt.disabled = true;
+      });
+      if (pickupTypeSelect.value === 'delivery') {
+        pickupTypeSelect.value = 'shop';
+        Swal.fire('แจ้งเตือน', 'เลยเวลา 14:00 น. แล้ว ไม่สามารถจัดส่งในรอบสุดท้าย (15:00 น.) ได้ค่ะ ต้องรับที่ร้านเท่านั้น', 'warning');
+      }
+      if (warningEl) warningEl.classList.remove('d-none');
+    } else {
+      Array.from(pickupTypeSelect.options).forEach(opt => {
+        if (opt.value === 'delivery') opt.disabled = false;
+      });
+      if (warningEl) warningEl.classList.add('d-none');
+    }
+
+    const pickupType = pickupTypeSelect.value;
     const isDelivery = pickupType === 'delivery';
     document.getElementById('deliveryAddressSection').style.display = isDelivery ? 'block' : 'none';
     document.getElementById('pickupTimeSection').style.display = isDelivery ? 'block' : 'none';
@@ -542,6 +563,12 @@ let state = {
   function placeOrder() {
     if (state.cart.length === 0) return showAlert('ข้อผิดพลาด', 'ไม่มีสินค้าในตะกร้า', 'error');
     if (String(state.config.close_day || '').split(',').includes(String(new Date().getDay()))) return showAlert('ขออภัย', 'วันนี้ร้านปิดทำการ ไม่สามารถสั่งซื้อได้', 'error');
+    
+    const now = new Date();
+    const currentTimeVal = now.getHours() + (now.getMinutes() / 60);
+    if (currentTimeVal >= 18.5) {
+      return showAlert('ขออภัย', 'ไม่สามารถสั่งสินค้าของวันนี้ได้แล้ว เนื่องจากร้านปิด 19.00 น.', 'error');
+    }
     
     const pickupType = document.getElementById('pickupType').value;
     const rawPickupTime = document.getElementById('pickupTime').value;
@@ -589,8 +616,7 @@ let state = {
               icon: 'success',
               timer: 5000,
               timerProgressBar: true,
-              showConfirmButton: false,
-              customClass: { popup: 'glass-panel' }
+              showConfirmButton: false
             }).then(() => {
               state.cart = [];
               switchView('view-tracking');
