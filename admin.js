@@ -205,18 +205,18 @@ let adminState = {
       items.forEach(o => {
         const div = document.createElement('div');
         const oDate = new Date(o.date_time).toLocaleDateString('en-GB');
+        const oDateTh = new Date(o.date_time).toLocaleDateString('th-TH');
         const isPast = oDate !== today;
         
         div.className = 'order-card glass';
         if (isPast) {
-          div.style.backgroundColor = '#fff1f2';
-          div.style.border = '1px solid #fecdd3';
+          div.setAttribute('style', 'background-color: #fff1f2 !important; border: 1px solid #fecdd3 !important;');
         }
         
         div.innerHTML = `
           <div style="font-weight:bold;">${o.order_no}</div>
           <div style="font-size:0.8rem; color:var(--text-light); margin:5px 0;">
-            ${isPast ? oDate + ' ' : ''}${new Date(o.date_time).toLocaleTimeString('th-TH')} | ${o.pickup_time || '-'}
+            ${isPast ? `<span style="color:#ef4444; font-weight:bold;">${oDateTh}</span> ` : ''}${new Date(o.date_time).toLocaleTimeString('th-TH')} | ${o.pickup_time || '-'}
           </div>
           <div>ยอด: ฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
         `;
