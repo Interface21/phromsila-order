@@ -69,7 +69,10 @@ let state = {
     // update specific views
     if (viewId === 'view-home' && state.products.length === 0) loadStoreData();
     if (viewId === 'view-checkout') renderCart();
-    if (viewId === 'view-tracking') loadOrders();
+    if (viewId === 'view-tracking') {
+      switchOrderTab('active');
+      loadOrders();
+    }
     
     updateFloatingCart();
   }
