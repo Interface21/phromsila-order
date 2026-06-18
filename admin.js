@@ -225,7 +225,7 @@ let adminState = {
     const custName = cust ? cust.name : 'ไม่ระบุ';
     
     const paymentText = o.payment === 'cash' ? '<span style="color:#eab308; font-weight:bold;">เงินสดปลายทาง</span>' : '<span style="color:#3b82f6; font-weight:bold;">โอนเงิน / สแกนคิวอาร์โค้ด</span>';
-    const custPhone = cust ? cust.phone : 'ไม่ระบุ';
+    const custPhone = cust ? cust.mobile_no : 'ไม่ระบุ';
     const deliveryAddr = o.pickup_type === 'delivery' ? `<br>ที่อยู่จัดส่ง: ${cust ? (cust.delivery_address || 'ไม่ระบุ') : 'ไม่ระบุ'}` : '';
     
     document.getElementById('ord_info').innerHTML = `
