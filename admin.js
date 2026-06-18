@@ -225,11 +225,11 @@ let adminState = {
     const custName = cust ? cust.name : 'ไม่ระบุ';
     
     const paymentText = o.payment === 'cash' ? '<span style="color:#eab308; font-weight:bold;">เงินสดปลายทาง</span>' : '<span style="color:#3b82f6; font-weight:bold;">โอนเงิน / สแกนคิวอาร์โค้ด</span>';
-    const custPhone = cust ? cust.mobile_no : 'ไม่ระบุ';
+    const custPhone = cust && cust.mobile_no ? `<span class="badge badge-order" style="margin-left:5px; display:inline-flex; align-items:center; gap:4px; font-weight:normal;"><i class="fas fa-phone-alt"></i> ${cust.mobile_no}</span>` : '';
     const deliveryAddr = o.pickup_type === 'delivery' ? `<br>ที่อยู่จัดส่ง: ${cust ? (cust.delivery_address || 'ไม่ระบุ') : 'ไม่ระบุ'}` : '';
     
     document.getElementById('ord_info').innerHTML = `
-      ลูกค้า: ${custName} (โทร: ${custPhone}) <br>
+      ลูกค้า: ${custName} ${custPhone} <br>
       รูปแบบ: ${o.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับที่ร้าน'} ${deliveryAddr} <br>
       ${o.pickup_time === '-' ? '' : 'รอบ: ' + o.pickup_time + '<br>'}
       วิธีชำระเงิน: ${paymentText}
