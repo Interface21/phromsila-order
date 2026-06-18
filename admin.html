@@ -307,8 +307,16 @@
         </div>
       </div>
       <div class="input-group">
-        <label>วันหยุดประจำสัปดาห์ (0=อาทิตย์, 1=จันทร์, ..., 6=เสาร์)</label>
-        <input type="number" id="cfg_close_day" class="input-control" min="0" max="6">
+        <label>วันหยุดประจำสัปดาห์</label>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; padding: 10px; background: #f8fafc; border: 1px solid #94a3b8; border-radius: 8px;" id="cfg_close_days_container">
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="0" class="chk-close-day"> อาทิตย์</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="1" class="chk-close-day"> จันทร์</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="2" class="chk-close-day"> อังคาร</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="3" class="chk-close-day"> พุธ</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="4" class="chk-close-day"> พฤหัสบดี</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="5" class="chk-close-day"> ศุกร์</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="6" class="chk-close-day"> เสาร์</label>
+        </div>
       </div>
       <hr style="margin:20px 0; border:none; border-top:1px solid rgba(0,0,0,0.1)">
       <h4>เปลี่ยนรหัสผ่านแอดมิน</h4>
@@ -454,8 +462,8 @@
   </div>
 </div>
 
-  <script src="api.js?v=12"></script>
-  <script src="admin.js?v=12"></script>
+  <script src="api.js?v=13"></script>
+  <script src="admin.js?v=13"></script>
 
 </body>
 </html>

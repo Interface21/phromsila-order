@@ -161,7 +161,7 @@ let state = {
         
         // Check if shop is closed today
         const today = new Date().getDay();
-        if (today == state.config.close_day) {
+        if (String(state.config.close_day || '').split(',').includes(String(today))) {
           Swal.fire({
             title: 'ร้านปิดทำการ',
             text: 'วันนี้ร้านปิดทำการค่ะ สามารถดูสินค้าได้แต่จะยังไม่สามารถสั่งซื้อได้นะคะ',
@@ -493,7 +493,7 @@ let state = {
       const [optH, optM] = opt.value.split(':').map(Number);
       const optTimeVal = optH + (optM/60);
       
-      const isClosed = new Date().getDay() == state.config.close_day;
+      const isClosed = String(state.config.close_day || '').split(',').includes(String(new Date().getDay()));
       if (isClosed || optTimeVal < currentTimeVal) {
         opt.disabled = true;
       } else {
@@ -541,7 +541,7 @@ let state = {
 
   function placeOrder() {
     if (state.cart.length === 0) return showAlert('ข้อผิดพลาด', 'ไม่มีสินค้าในตะกร้า', 'error');
-    if (new Date().getDay() == state.config.close_day) return showAlert('ขออภัยค่ะ', 'วันนี้ร้านปิดทำการ ไม่สามารถสั่งซื้อได้ค่ะ', 'error');
+    if (String(state.config.close_day || '').split(',').includes(String(new Date().getDay()))) return showAlert('ขออภัย', 'วันนี้ร้านปิดทำการ ไม่สามารถสั่งซื้อได้', 'error');
     
     const pickupType = document.getElementById('pickupType').value;
     const rawPickupTime = document.getElementById('pickupTime').value;
