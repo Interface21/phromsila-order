@@ -29,6 +29,7 @@ function doPost(e) {
       'loginCustomer': loginCustomer,
       'getActiveOrderCount': getActiveOrderCount,
       'getOrders': getOrders,
+      'getOrdersByCustomer': getOrdersByCustomer,
       'updateOrderStatus': updateOrderStatus,
       'placeOrder': placeOrder,
       'removeOrderItem': removeOrderItem
@@ -499,4 +500,13 @@ function removeOrderItem(orderId, detailId) {
   }
   
   return { success: false, message: 'Order not found' };
+}
+
+function getOrdersByCustomer(customerId) {
+  const allOrdersRes = getOrders();
+  if (allOrdersRes.success) {
+    const myOrders = allOrdersRes.data.filter(o => o.customer_id === customerId);
+    return { success: true, data: myOrders };
+  }
+  return allOrdersRes;
 }
