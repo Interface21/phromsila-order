@@ -662,6 +662,10 @@ let state = {
               showConfirmButton: false
             }).then(() => {
               state.cart = [];
+              saveCart();
+              updateCartBadge();
+              updateFloatingCart();
+              filterProducts();
               switchView('view-tracking');
             });
           } else {
