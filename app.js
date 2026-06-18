@@ -631,9 +631,41 @@ let state = {
 
 
   // --- TRACKING ---
+  let currentOrderTab = 'active';
+  let historyLimit = 5;
+
+  function switchOrderTab(tab) {
+    currentOrderTab = tab;
+    document.getElementById('tabActive').style.color = tab === 'active' ? 'var(--primary)' : 'var(--text-light)';
+    document.getElementById('tabActive').style.fontWeight = tab === 'active' ? 'bold' : 'normal';
+    document.getElementById('tabActive').style.borderBottom = tab === 'active' ? '2px solid var(--primary)' : 'none';
+    
+    document.getElementById('tabHistory').style.color = tab === 'history' ? 'var(--primary)' : 'var(--text-light)';
+    document.getElementById('tabHistory').style.fontWeight = tab === 'history' ? 'bold' : 'normal';
+    document.getElementById('tabHistory').style.borderBottom = tab === 'history' ? '2px solid var(--primary)' : 'none';
+
+    document.getElementById('ordersContainer').style.display = tab === 'active' ? 'block' : 'none';
+    document.getElementById('historyOrdersContainer').style.display = tab === 'history' ? 'block' : 'none';
+    
+    renderOrders();
+  }
+
+  function loadMoreHistory() {
+    historyLimit += 5;
+    renderOrders();
+  }
+
   function loadOrders() {
-    const container = document.getElementById('ordersContainer');
-    container.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>';
+    const activeContainer = document.getElementById('ordersContainer');
+    const historyContainer = document.getElementById('historyOrdersContainer');
+    const loadMoreBtn = document.getElementById('loadMoreHistoryBtn');
+    
+    if (currentOrderTab === 'active') {
+      activeContainer.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>';
+    } else if (historyContainer) {
+      historyContainer.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>';
+    }
+    if (loadMoreBtn) loadMoreBtn.style.display = 'none';
     
     google.script.run.withSuccessHandler(res => {
       if (res.success) {
@@ -644,16 +676,16 @@ let state = {
   }
 
   function renderOrders() {
-    const container = document.getElementById('ordersContainer');
-    if (state.orders.length === 0) {
-      container.innerHTML = '<div style="text-align:center; padding:40px;">ไม่มีประวัติการสั่งซื้อ</div>';
-      return;
-    }
+    const activeContainer = document.getElementById('ordersContainer');
+    const historyContainer = document.getElementById('historyOrdersContainer');
+    const loadMoreBtn = document.getElementById('loadMoreHistoryBtn');
     
     // Sort descending
     state.orders.sort((a,b) => new Date(b.date_time) - new Date(a.date_time));
     
-    let html = '';
+    const activeOrders = state.orders.filter(o => !['shipped', 'cancel'].includes(o.status));
+    const historyOrders = state.orders.filter(o => ['shipped', 'cancel'].includes(o.status));
+
     const statusMap = {
       'order': { label: 'รอรับออเดอร์', class: 'badge-order' },
       'preparing_order': { label: 'กำลังจัดเตรียม', class: 'badge-preparing_order' },
@@ -661,18 +693,21 @@ let state = {
       'shipped': { label: 'จัดส่งแล้ว', class: 'badge-shipped' },
       'cancel': { label: 'ยกเลิก', class: 'badge-cancel' }
     };
-    
-    state.orders.forEach(o => {
-      const s = statusMap[o.status] || { label: o.status, class: 'badge-order' };
-      const dateStr = new Date(o.date_time).toLocaleString('th-TH');
-      
-      let itemsHtml = '';
-      o.items.forEach(item => {
-        const p = state.products.find(prod => prod.id === item.product_id);
-        const name = p ? p.name : 'ไม่ระบุ';
-        itemsHtml += `<div style="font-size:0.9rem; color:var(--text-light);">${item.quantity} x ${name}</div>`;
-      });
-      
+
+    function generateHtml(orderList) {
+      if (orderList.length === 0) return '<div style="text-align:center; padding:40px;">ไม่มีข้อมูล</div>';
+      let html = '';
+      orderList.forEach(o => {
+        const s = statusMap[o.status] || { label: o.status, class: 'badge-order' };
+        const dateStr = new Date(o.date_time).toLocaleString('th-TH');
+        
+        let itemsHtml = '';
+        o.items.forEach(item => {
+          const p = state.products.find(prod => prod.id === item.product_id);
+          const name = p ? p.name : 'ไม่ระบุ';
+          itemsHtml += `<div style="font-size:0.9rem; color:var(--text-light);">${item.quantity} x ${name}</div>`;
+        });
+        
         const pickupMethod = o.pickup_type === 'delivery' ? '<span style="color:#4A90E2; font-weight:bold;">จัดส่ง</span>' : '<span style="color:#f59e0b; font-weight:bold;">รับที่ร้าน</span>';
         const pickupTime = o.pickup_time === '-' ? '' : ` (${o.pickup_time})`;
         
@@ -707,9 +742,22 @@ let state = {
           </div>
         `;
       });
-      
-      container.innerHTML = html;
+      return html;
     }
+
+    if (activeContainer) activeContainer.innerHTML = generateHtml(activeOrders);
+    
+    if (historyContainer) {
+      const visibleHistory = historyOrders.slice(0, historyLimit);
+      historyContainer.innerHTML = generateHtml(visibleHistory);
+
+      if (currentOrderTab === 'history' && historyOrders.length > historyLimit) {
+        if (loadMoreBtn) loadMoreBtn.style.display = 'block';
+      } else {
+        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+      }
+    }
+  }
 
     function cancelOrder(id) {
       Swal.fire({
