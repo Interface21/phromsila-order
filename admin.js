@@ -963,17 +963,18 @@ let adminState = {
       const accumulate = parseInt(c.delivery_count_accumulate || 0);
       const usage = parseInt(c.delivery_count_usage || 0);
       const available = accumulate - usage;
+      const redeemedCount = reqCount > 0 ? Math.floor(usage / reqCount) : 0;
       
       const canRedeem = available >= reqCount;
-      const redeemBtn = canRedeem ? `<button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="redeemCouponForCustomer('${c.id}')"><i class="fas fa-gift"></i> แลกคูปอง</button>` : `<span style="font-size: 0.8rem; color: #94a3b8;">ยังไม่ถึงเกณฑ์</span>`;
       
       tbody.innerHTML += `
         <tr>
           <td>${c.name}</td>
           <td>${c.mobile_no}</td>
           <td>${accumulate}</td>
+          <td style="color: var(--danger);">${usage}</td>
+          <td style="color: var(--primary); font-weight: bold;">${redeemedCount}</td>
           <td style="color: ${canRedeem ? 'var(--success)' : 'var(--text-dark)'}; font-weight: bold;">${available}</td>
-          <td>${redeemBtn}</td>
         </tr>
       `;
     });
