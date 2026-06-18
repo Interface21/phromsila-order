@@ -369,6 +369,16 @@
           <input type="number" id="cfg_free_delivery_threshold" class="input-control">
         </div>
       </div>
+      <div class="input-group" style="display:flex; gap:15px; margin-top:15px;">
+        <div style="flex:1;">
+          <label>สะสมจัดส่งครบ (ครั้ง)</label>
+          <input type="number" id="cfg_delivery_count" class="input-control" placeholder="เช่น 10">
+        </div>
+        <div style="flex:1;">
+          <label>มูลค่าคูปองที่ได้ (บาท)</label>
+          <input type="number" id="cfg_coupon_discount" class="input-control" placeholder="เช่น 20">
+        </div>
+      </div>
       <div class="input-group">
         <label>วันหยุดประจำสัปดาห์</label>
         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; padding: 10px; background: #f8fafc; border: 1px solid #94a3b8; border-radius: 8px;" id="cfg_close_days_container">
@@ -524,7 +534,7 @@
 </div>
 
   <script src="api.js?v=22"></script>
-  <script src="admin.js?v=25"></script>
+  <script src="admin.js?v=23"></script>
 
 </body>
 </html>

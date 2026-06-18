@@ -997,6 +997,8 @@ let adminState = {
     document.getElementById('cfg_line_id').value = c.line_id || '';
     document.getElementById('cfg_delivery_charge').value = c.delivery_charge || 0;
     document.getElementById('cfg_free_delivery_threshold').value = c.free_delivery_threshold || 0;
+    document.getElementById('cfg_delivery_count').value = c.delivery_count || 10;
+    document.getElementById('cfg_coupon_discount').value = c.coupon_discount || 20;
     
     const closeDays = String(c.close_day != null ? c.close_day : '').split(',');
     document.querySelectorAll('.chk-close-day').forEach(chk => {
@@ -1019,10 +1021,10 @@ let adminState = {
       line_id: document.getElementById('cfg_line_id').value,
       delivery_charge: document.getElementById('cfg_delivery_charge').value,
       free_delivery_threshold: document.getElementById('cfg_free_delivery_threshold').value,
+      delivery_count: document.getElementById('cfg_delivery_count').value,
+      coupon_discount: document.getElementById('cfg_coupon_discount').value,
       close_day: selectedDays,
-      pwd: adminState.config.pwd,
-      delivery_count: adminState.config.delivery_count,
-      coupon_discount: adminState.config.coupon_discount
+      pwd: adminState.config.pwd
     };
     
     Swal.showLoading();
