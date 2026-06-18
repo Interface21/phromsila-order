@@ -439,11 +439,26 @@ let state = {
     const phone = document.getElementById('loginPhone').value.trim();
     if (phone.length < 9) return showAlert('ข้อผิดพลาด', 'กรุณาระบุเบอร์โทรศัพท์ให้ถูกต้อง', 'error');
     
+    const btn = document.getElementById('btnCustomerLogin');
+    const originalText = btn ? btn.innerHTML : 'เข้าสู่ระบบ';
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเข้าระบบ...';
+      btn.disabled = true;
+    }
+    
     Swal.showLoading();
     google.script.run.withFailureHandler(e => {
+      if (btn) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
       Swal.close();
       showAlert('Error', e.message || e.toString(), 'error');
     }).withSuccessHandler(res => {
+      if (btn) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
       Swal.close();
       if (res.success) {
         state.customer = res.data;
