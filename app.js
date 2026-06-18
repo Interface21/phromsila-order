@@ -313,6 +313,7 @@ let state = {
     }
     
     updateFloatingCart();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function showAlert(title, text, icon) {
@@ -884,7 +885,6 @@ let state = {
         renderCart();
         updateFloatingCart();
         filterProducts();
-        updateCartBadge();
         saveCart();
         switchView('view-home');
         Swal.fire({
@@ -1042,7 +1042,6 @@ let state = {
             }).then(() => {
               state.cart = [];
               saveCart();
-              updateCartBadge();
               updateFloatingCart();
               filterProducts();
               switchView('view-tracking');
