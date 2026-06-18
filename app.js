@@ -618,6 +618,7 @@ let state = {
       }
       if (checkoutAddress !== state.customer.delivery_address) {
         state.customer.delivery_address = checkoutAddress;
+        localStorage.setItem('phromsila_customer', JSON.stringify(state.customer));
         google.script.run.saveCustomer(state.customer);
       }
       finalAddress = checkoutAddress;
