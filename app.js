@@ -164,15 +164,9 @@ let state = {
         
         // Check if shop is closed today
         const today = new Date().getDay();
-        if (String(state.config.close_day || '').split(',').includes(String(today))) {
-          Swal.fire({
-            title: 'ร้านปิดทำการ',
-            text: 'วันนี้ร้านปิดทำการค่ะ สามารถดูสินค้าได้แต่จะยังไม่สามารถสั่งซื้อได้นะคะ',
-            icon: 'info',
-            confirmButtonText: 'รับทราบ',
-            confirmButtonColor: '#4A90E2',
-            customClass: { popup: 'glass-panel' }
-          });
+        const closeDaysStr = state.config.close_day != null ? state.config.close_day : '';
+        if (String(closeDaysStr).split(',').includes(String(today))) {
+          document.getElementById('shopClosedBanner').classList.remove('d-none');
         }
 
         // load catalogs
@@ -496,7 +490,8 @@ let state = {
       const [optH, optM] = opt.value.split(':').map(Number);
       const optTimeVal = optH + (optM/60);
       
-      const isClosed = String(state.config.close_day || '').split(',').includes(String(new Date().getDay()));
+      const closeDaysStr = state.config.close_day != null ? state.config.close_day : '';
+      const isClosed = String(closeDaysStr).split(',').includes(String(new Date().getDay()));
       if (isClosed || optTimeVal < currentTimeVal) {
         opt.disabled = true;
       } else {
@@ -565,7 +560,8 @@ let state = {
 
   function placeOrder() {
     if (state.cart.length === 0) return showAlert('ข้อผิดพลาด', 'ไม่มีสินค้าในตะกร้า', 'error');
-    if (String(state.config.close_day || '').split(',').includes(String(new Date().getDay()))) return showAlert('ขออภัย', 'วันนี้ร้านปิดทำการ ไม่สามารถสั่งซื้อได้', 'error');
+    const closeDaysStr = state.config.close_day != null ? state.config.close_day : '';
+    if (String(closeDaysStr).split(',').includes(String(new Date().getDay()))) return showAlert('ขออภัย', 'วันนี้ร้านปิดทำการ ไม่สามารถสั่งซื้อได้', 'error');
     
     const now = new Date();
     const currentTimeVal = now.getHours() + (now.getMinutes() / 60);
