@@ -895,7 +895,6 @@ let state = {
         renderCart();
         updateFloatingCart();
         filterProducts();
-        saveCart();
         switchView('view-home');
         Swal.fire({
           title: 'ล้างตะกร้าแล้ว',
@@ -1046,12 +1045,11 @@ let state = {
               title: 'สั่งซื้อสำเร็จ!',
               text: `หมายเลขคำสั่งซื้อ: ${res.orderNo}`,
               icon: 'success',
-              timer: 5000,
-              timerProgressBar: true,
-              showConfirmButton: false
+              confirmButtonColor: '#4A90E2',
+              confirmButtonText: 'ตกลง',
+              allowOutsideClick: false
             }).then(() => {
               state.cart = [];
-              saveCart();
               updateFloatingCart();
               filterProducts();
               switchView('view-tracking');
