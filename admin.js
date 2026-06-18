@@ -412,8 +412,13 @@ let adminState = {
           div.setAttribute('style', 'background-color: #fff1f2 !important; border: 1px solid #fecdd3 !important;');
         }
         
+        const typeIcon = o.pickup_type === 'delivery' ? '<i class="fas fa-motorcycle" style="color: var(--primary);"></i>' : '<i class="fas fa-store" style="color: #10b981;"></i>';
+        
         div.innerHTML = `
-          <div style="font-weight:bold;">${o.order_no}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:bold;">${o.order_no}</div>
+            <div style="font-size: 1.1rem;">${typeIcon}</div>
+          </div>
           <div style="font-size:0.8rem; color:var(--text-light); margin:5px 0;">
             ${isPast ? `<span style="color:#ef4444; font-weight:bold;">${oDateTh}</span> ` : ''}${new Date(o.date_time).toLocaleTimeString('th-TH')} | ${o.pickup_time || '-'}
           </div>
@@ -442,9 +447,9 @@ let adminState = {
     const deliveryAddr = o.pickup_type === 'delivery' ? `<br>ที่อยู่จัดส่ง: ${cust ? (cust.delivery_address || 'ไม่ระบุ') : 'ไม่ระบุ'}` : '';
     
     const isDelivery = o.pickup_type === 'delivery';
-    const typeIcon = isDelivery ? '<i class="fas fa-motorcycle fa-3x" style="color: var(--primary);"></i>' : '<i class="fas fa-store fa-3x" style="color: #10b981;"></i>';
-    const typeText = isDelivery ? '<strong style="color: var(--primary); font-size: 1.2rem;">จัดส่งถึงที่</strong>' : '<strong style="color: #10b981; font-size: 1.2rem;">รับที่ร้าน</strong>';
-    const timeText = o.pickup_time !== '-' ? `<div style="font-size: 1.1rem; font-weight: bold; margin-top: 5px;">รอบ: ${o.pickup_time}</div>` : '';
+    const typeIcon = isDelivery ? '<i class="fas fa-motorcycle fa-2x" style="color: var(--primary);"></i>' : '<i class="fas fa-store fa-2x" style="color: #10b981;"></i>';
+    const typeText = isDelivery ? '<strong style="color: var(--primary); font-size: 1.1rem;">จัดส่งถึงที่</strong>' : '<strong style="color: #10b981; font-size: 1.1rem;">รับที่ร้าน</strong>';
+    const timeText = o.pickup_time !== '-' ? `<div style="font-size: 1rem; font-weight: bold; margin-top: 2px;">รอบ: ${o.pickup_time}</div>` : '';
     
     document.getElementById('ord_info').innerHTML = `
       <div style="display: grid; grid-template-columns: 1fr 200px; gap: 20px;">
@@ -454,10 +459,12 @@ let adminState = {
           วิธีชำระเงิน: ${paymentText}
           ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;"><i class="fas fa-exclamation-circle"></i> เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
         </div>
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 15px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">
           ${typeIcon}
-          <div style="margin-top: 10px;">${typeText}</div>
-          ${timeText}
+          <div style="text-align: left;">
+            <div>${typeText}</div>
+            ${timeText}
+          </div>
         </div>
       </div>
     `;
