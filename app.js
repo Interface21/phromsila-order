@@ -376,9 +376,9 @@ let state = {
     const list = document.getElementById('myCouponsList');
     if (state.coupons && state.coupons.length > 0) {
       list.innerHTML = state.coupons.map(c => `
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #8b5cf6; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid var(--primary); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
           <div style="font-weight: bold; color: #334155;">ส่วนลด ฿${c.discount_amount}</div>
-          <div style="font-size: 0.8rem; color: #8b5cf6;">พร้อมใช้งาน</div>
+          <div style="font-size: 0.8rem; color: var(--primary);">พร้อมใช้งาน</div>
         </div>
       `).join('');
     } else {
