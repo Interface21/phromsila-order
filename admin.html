@@ -155,7 +155,7 @@
       <input type="password" id="adminPwd" class="input-control" placeholder="กรอกรหัสผ่าน" onkeypress="if(event.key === 'Enter') handleAdminLogin()">
       <div id="loginError" class="text-danger mt-1 d-none" style="font-size:0.9rem; color:var(--primary);">รหัสผ่านไม่ถูกต้อง</div>
     </div>
-    <button class="btn btn-primary w-100" onclick="handleAdminLogin()">เข้าสู่ระบบ</button>
+    <button id="btnAdminLogin" class="btn btn-primary w-100" onclick="handleAdminLogin()">เข้าสู่ระบบ</button>
     <div style="margin-top: 15px;">
       <button class="btn btn-glass w-100" onclick="goToShop()"><i class="fas fa-store"></i> กลับไปยังหน้าร้าน</button>
     </div>

@@ -22,13 +22,28 @@ let adminState = {
     const pwd = document.getElementById('adminPwd').value;
     if(!pwd) return Swal.fire('Error', 'Please enter password', 'error');
     
+    const btn = document.getElementById('btnAdminLogin');
+    const originalText = btn.innerHTML;
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเข้าระบบ...';
+      btn.disabled = true;
+    }
+    
     Swal.showLoading();
     const hash = await sha256(pwd);
     
     google.script.run.withFailureHandler(e => {
+      if (btn) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
       Swal.close();
       Swal.fire('Error', e.message || e.toString(), 'error');
     }).withSuccessHandler(res => {
+      if (btn) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
       if (res.success) {
         Swal.close();
         document.getElementById('view-login').style.display = 'none';
