@@ -37,6 +37,9 @@ let state = {
       document.getElementById('btnLogout').classList.remove('d-none');
       document.getElementById('btnLogin').classList.add('d-none');
       
+      const bellContainer = document.getElementById('notificationBellContainer');
+      if (bellContainer) bellContainer.classList.remove('d-none');
+      
       // Load active order count badge
       google.script.run.withSuccessHandler(res => {
         if (!res.success) return;
@@ -54,12 +57,149 @@ let state = {
         btn.classList.remove('d-none');
       }).getActiveOrderCount(state.customer.id);
       
+      startNotificationPolling();
     } else {
       document.getElementById('userNameDisplay').textContent = 'คุณลูกค้า';
       document.getElementById('btnMyOrders').classList.add('d-none');
       document.getElementById('btnLogout').classList.add('d-none');
       document.getElementById('btnLogin').classList.remove('d-none');
+      
+      const bellContainer = document.getElementById('notificationBellContainer');
+      if (bellContainer) bellContainer.classList.add('d-none');
+      stopNotificationPolling();
     }
+  }
+
+  // --- NOTIFICATION SYSTEM ---
+  let notificationTimer = null;
+  
+  function startNotificationPolling() {
+    stopNotificationPolling();
+    renderNotifications();
+    checkOrderUpdates();
+    notificationTimer = setInterval(checkOrderUpdates, 30000); // 30s
+  }
+  
+  function stopNotificationPolling() {
+    if (notificationTimer) clearInterval(notificationTimer);
+    notificationTimer = null;
+  }
+  
+  window.toggleNotifications = function() {
+    const dd = document.getElementById('notificationDropdown');
+    if (dd) {
+      dd.classList.toggle('d-none');
+      if (!dd.classList.contains('d-none')) {
+        const localData = JSON.parse(localStorage.getItem('phromsila_notif') || '{"notifications":[], "orderStatuses":{}}');
+        let changed = false;
+        localData.notifications.forEach(n => {
+          if (!n.read) { n.read = true; changed = true; }
+        });
+        if (changed) {
+          localStorage.setItem('phromsila_notif', JSON.stringify(localData));
+          renderNotifications();
+        }
+      }
+    }
+  };
+  
+  function checkOrderUpdates() {
+    if (!state.customer) return;
+    google.script.run.withSuccessHandler(res => {
+      if (!res.success) return;
+      processOrderNotifications(res.data);
+    }).getOrdersByCustomer(state.customer.id);
+  }
+  
+  function processOrderNotifications(serverOrders) {
+    const localData = JSON.parse(localStorage.getItem('phromsila_notif') || '{"notifications":[], "orderStatuses":{}}');
+    let hasNew = false;
+    
+    serverOrders.forEach(o => {
+      const oldStatus = localData.orderStatuses[o.id];
+      if (oldStatus && oldStatus !== o.status) {
+        let title = '';
+        if (o.status === 'preparing_order') title = 'กำลังจัดเตรียมสินค้า';
+        else if (o.status === 'ready_for_pickup') title = 'สินค้าพร้อมรับแล้ว';
+        else if (o.status === 'shipped') title = 'จัดส่งสินค้าแล้ว';
+        else if (o.status === 'completed') title = 'เสร็จสิ้น';
+        else if (o.status === 'cancel') title = 'คำสั่งซื้อถูกยกเลิก';
+        
+        if (title) {
+          localData.notifications.unshift({
+            id: 'notif_' + Date.now() + '_' + Math.random(),
+            order_no: o.order_no,
+            title: title,
+            body: `ออเดอร์ ${o.order_no} เปลี่ยนสถานะเป็น: ${title}`,
+            date: new Date().toISOString(),
+            read: false
+          });
+          hasNew = true;
+          
+          Swal.fire({
+            title: 'อัปเดตสถานะ!',
+            text: `ออเดอร์ ${o.order_no} เปลี่ยนสถานะเป็น: ${title}`,
+            icon: 'info',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+          });
+        }
+      }
+      localData.orderStatuses[o.id] = o.status;
+    });
+    
+    const activeCount = serverOrders.filter(o => o.status !== 'cancel' && o.status !== 'shipped' && o.status !== 'completed').length;
+    const btn = document.getElementById('btnMyOrders');
+    const text = document.getElementById('activeOrdersText');
+    if (text) text.textContent = activeCount + " ";
+    if (btn) btn.className = activeCount > 0 ? "btn btn-warning" : "btn btn-glass";
+    
+    if (hasNew || Object.keys(localData.orderStatuses).length > 0) {
+      localStorage.setItem('phromsila_notif', JSON.stringify(localData));
+      if (hasNew) renderNotifications();
+    }
+  }
+  
+  function renderNotifications() {
+    const localData = JSON.parse(localStorage.getItem('phromsila_notif') || '{"notifications":[], "orderStatuses":{}}');
+    const list = document.getElementById('notificationList');
+    const badge = document.getElementById('notificationBadge');
+    
+    if (!list || !badge) return;
+    
+    const unreadCount = localData.notifications.filter(n => !n.read).length;
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount;
+      badge.style.display = 'block';
+    } else {
+      badge.style.display = 'none';
+    }
+    
+    if (localData.notifications.length === 0) {
+      list.innerHTML = '<div style="text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 10px;">ไม่มีแจ้งเตือนใหม่</div>';
+      return;
+    }
+    
+    if (localData.notifications.length > 20) {
+      localData.notifications = localData.notifications.slice(0, 20);
+      localStorage.setItem('phromsila_notif', JSON.stringify(localData));
+    }
+    
+    let html = '';
+    localData.notifications.forEach(n => {
+      const bg = n.read ? '' : 'background: rgba(74, 144, 226, 0.1); border-left: 3px solid var(--primary);';
+      const timeStr = new Date(n.date).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+      html += `
+        <div style="padding: 10px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 8px; ${bg}">
+          <div style="font-weight: bold; font-size: 0.9rem; color: var(--text-dark);">${n.title}</div>
+          <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 2px;">${n.body}</div>
+          <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 4px; text-align: right;">${timeStr}</div>
+        </div>
+      `;
+    });
+    list.innerHTML = html;
   }
 
   function switchView(viewId) {
