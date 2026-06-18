@@ -391,7 +391,6 @@ let state = {
     if (!state.customer) return;
     Swal.showLoading();
     google.script.run.withFailureHandler(e => {
-      Swal.close();
       showAlert('Error', e.message || e.toString(), 'error');
     }).withSuccessHandler(res => {
       if (res.success) {
@@ -401,15 +400,11 @@ let state = {
             state.customer = cRes.data;
             localStorage.setItem('phromsila_customer', JSON.stringify(cRes.data));
             loadCustomerCoupons();
-            setTimeout(() => {
-              Swal.close();
-              renderRewardsModal();
-              showAlert('สำเร็จ', 'แลกคูปองเรียบร้อยแล้ว!', 'success');
-            }, 1000);
+            renderRewardsModal();
+            showAlert('สำเร็จ', 'แลกคูปองเรียบร้อยแล้ว!', 'success');
           }
         }).loginCustomer(state.customer.mobile_no);
       } else {
-        Swal.close();
         showAlert('Error', res.message, 'error');
       }
     }).redeemCoupon(state.customer.id);
@@ -452,20 +447,20 @@ let state = {
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
-      Swal.close();
       showAlert('Error', e.message || e.toString(), 'error');
     }).withSuccessHandler(res => {
       if (btn) {
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
-      Swal.close();
       if (res.success) {
+        Swal.close();
         state.customer = res.data;
         localStorage.setItem('phromsila_customer', JSON.stringify(res.data));
         updateAuthUI();
         switchView('view-home');
       } else {
+        Swal.close();
         // Not found, go to register
         document.getElementById('regPhone').value = phone;
         switchView('view-register');
@@ -1218,8 +1213,8 @@ let state = {
         if (result.isConfirmed) {
           Swal.showLoading();
           google.script.run.withSuccessHandler(res => {
-            Swal.close();
             if(res.success) {
+              Swal.close();
               loadOrders(); // reload tracking
               updateAuthUI(); // refresh badge
             } else {
