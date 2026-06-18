@@ -114,6 +114,10 @@ let adminState = {
   }
 
   // --- Dashboard ---
+  let salesChartInst = null;
+  let ordersChartInst = null;
+  let pickupChartInst = null;
+
   function renderDashboard() {
     const today = new Date().toLocaleDateString('en-GB'); 
     const todayOrders = adminState.orders.filter(o => new Date(o.date_time).toLocaleDateString('en-GB') === today);
@@ -123,47 +127,134 @@ let adminState = {
     document.getElementById('dashSales').textContent = `฿${totalSales.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
     document.getElementById('dashOrders').textContent = validOrders.length.toLocaleString('en-US');
     
-    // Custom Horizontal Stacked Bar Chart
-    const rounds = ['ทั้งหมด', '09:00', '11:00', '13:00', '15:00'];
-    const statuses = ['order', 'preparing_order', 'preparing_shipment', 'shipped', 'cancel'];
-    const statusLabels = { order: 'รอรับออเดอร์', preparing_order: 'กำลังจัดเตรียม', preparing_shipment: 'รอจัดส่ง', shipped: 'เสร็จสิ้น', cancel: 'ยกเลิก' };
-    const statusColors = { order: '#4A90E2', preparing_order: '#f59e0b', preparing_shipment: '#ea580c', shipped: '#10b981', cancel: '#ef4444' };
-    
-    let html = '';
-    
-    rounds.forEach(round => {
-       const filtered = round === 'ทั้งหมด' ? todayOrders : todayOrders.filter(o => o.pickup_time === round);
-       const total = filtered.length;
-       
-       let barsHtml = '';
-       if (total === 0) {
-          barsHtml = `<div style="width: 100%; background: #f1f5f9; text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 5px 0;">ไม่มีออเดอร์</div>`;
-       } else {
-          statuses.forEach(st => {
-             const count = filtered.filter(o => o.status === st).length;
-             if (count > 0) {
-                const pct = (count / total) * 100;
-                barsHtml += `<div style="width: ${pct}%; background: ${statusColors[st]}; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 5px 0;" title="${count.toLocaleString('en-US')} ${statusLabels[st]}">${count.toLocaleString('en-US')} ${statusLabels[st]}</div>`;
-             }
-          });
-       }
-       
-       html += `
-         <div style="margin-bottom: 15px;">
-            <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 5px; color: var(--text-dark);">
-              ${round === 'ทั้งหมด' ? 'ภาพรวมรอบทั้งหมด' : 'รอบจัดส่ง ' + round} 
-              <span style="color:#64748b; font-weight:normal;">(${total.toLocaleString('en-US')} ออเดอร์)</span>
-            </div>
-            <div style="display: flex; height: 35px; border-radius: 20px; overflow: hidden; background: #f1f5f9; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
-               ${barsHtml}
-            </div>
-         </div>
-       `;
+    const pendingStatuses = ['order', 'preparing_order', 'preparing_shipment'];
+    const pendingOrders = todayOrders.filter(o => pendingStatuses.includes(o.status)).length;
+    const completedOrders = todayOrders.filter(o => o.status === 'shipped').length;
+    document.getElementById('dashPending').textContent = pendingOrders.toLocaleString('en-US');
+    document.getElementById('dashCompleted').textContent = completedOrders.toLocaleString('en-US');
+
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      last7Days.push(d.toLocaleDateString('en-GB'));
+    }
+
+    const salesTrend = [];
+    const ordersTrend = [];
+    last7Days.forEach(dateStr => {
+      const dayOrders = adminState.orders.filter(o => new Date(o.date_time).toLocaleDateString('en-GB') === dateStr && o.status !== 'cancel');
+      salesTrend.push(dayOrders.reduce((sum, o) => sum + parseFloat(o.net_total), 0));
+      ordersTrend.push(dayOrders.length);
     });
-    
-    const chartContainer = document.getElementById('custom-dashboard-chart');
-    if (chartContainer) {
-       chartContainer.innerHTML = html;
+
+    const thLabels = last7Days.map(d => {
+      const parts = d.split('/');
+      return `${parts[0]}/${parts[1]}`;
+    });
+
+    if (salesChartInst) salesChartInst.destroy();
+    if (ordersChartInst) ordersChartInst.destroy();
+    if (pickupChartInst) pickupChartInst.destroy();
+
+    const ctxSales = document.getElementById('salesTrendChart');
+    if (ctxSales) {
+      salesChartInst = new Chart(ctxSales.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: thLabels,
+          datasets: [{
+            label: 'ยอดขาย (บาท)',
+            data: salesTrend,
+            backgroundColor: '#10b981',
+            borderRadius: 4
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    const ctxOrders = document.getElementById('ordersTrendChart');
+    if (ctxOrders) {
+      ordersChartInst = new Chart(ctxOrders.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: thLabels,
+          datasets: [{
+            label: 'จำนวนออเดอร์',
+            data: ordersTrend,
+            borderColor: '#4A90E2',
+            backgroundColor: 'rgba(74, 144, 226, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: '#4A90E2'
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    const recentOrders = adminState.orders.filter(o => {
+      const oDate = new Date(o.date_time).toLocaleDateString('en-GB');
+      return last7Days.includes(oDate) && o.status !== 'cancel';
+    });
+
+    const itemCounts = {};
+    recentOrders.forEach(o => {
+      o.items.forEach(item => {
+        if (!itemCounts[item.product_id]) itemCounts[item.product_id] = 0;
+        itemCounts[item.product_id] += parseInt(item.quantity);
+      });
+    });
+
+    const topItems = Object.keys(itemCounts)
+      .map(id => {
+        const p = adminState.products.find(prod => prod.id === id);
+        return { name: p ? p.name : 'ไม่ระบุ', qty: itemCounts[id] };
+      })
+      .sort((a,b) => b.qty - a.qty)
+      .slice(0, 5);
+
+    let topSellersHtml = '';
+    if (topItems.length === 0) {
+      topSellersHtml = '<div style="text-align:center; color:var(--text-light); padding:20px;">ไม่มีข้อมูล</div>';
+    } else {
+      topItems.forEach((item, idx) => {
+        topSellersHtml += `
+          <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+            <div><span style="display:inline-block; width:24px; height:24px; background:#f1f5f9; text-align:center; border-radius:50%; font-weight:bold; color:var(--primary); line-height:24px; margin-right:10px;">${idx+1}</span> ${item.name}</div>
+            <div style="font-weight:bold; color:var(--text-dark);">${item.qty} ชิ้น</div>
+          </div>
+        `;
+      });
+    }
+    const topSellersList = document.getElementById('topSellersList');
+    if (topSellersList) topSellersList.innerHTML = topSellersHtml;
+
+    let deliveryCount = 0;
+    let shopCount = 0;
+    recentOrders.forEach(o => {
+      if (o.pickup_type === 'delivery') deliveryCount++;
+      else shopCount++;
+    });
+
+    const ctxPickup = document.getElementById('pickupRatioChart');
+    if (ctxPickup) {
+      pickupChartInst = new Chart(ctxPickup.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['จัดส่ง', 'รับที่ร้าน'],
+          datasets: [{
+            data: [deliveryCount, shopCount],
+            backgroundColor: ['#4A90E2', '#f59e0b']
+          }]
+        },
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
     }
   }
 

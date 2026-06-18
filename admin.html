@@ -181,21 +181,60 @@
 
   <!-- DASHBOARD -->
   <div id="view-dashboard" class="view-section active">
-    <h2>ภาพรวม (Dashboard)</h2>
-    <div style="display:flex; gap:20px; margin-top:20px;">
-      <div class="glass-panel" style="flex:1; padding:20px;">
-        <h4>ยอดขายวันนี้</h4>
-        <h2 id="dashSales" style="color:var(--primary); font-size:2rem;">฿0.00</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="margin:0;">ภาพรวม (Dashboard)</h2>
+      <button class="btn btn-primary" onclick="renderDashboard()" title="รีเฟรช"><i class="fas fa-sync-alt"></i> อัปเดตข้อมูล</button>
+    </div>
+    
+    <!-- KPI Cards -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;">
+      <div class="glass-panel" style="padding:20px; border-left: 4px solid #10b981 !important;">
+        <h4 style="margin:0 0 10px 0; color:var(--text-light); font-size:0.9rem;">ยอดขายวันนี้</h4>
+        <h2 id="dashSales" style="margin:0; color:#10b981; font-size:1.8rem;">฿0.00</h2>
       </div>
-      <div class="glass-panel" style="flex:1; padding:20px;">
-        <h4>จำนวนคำสั่งซื้อวันนี้</h4>
-        <h2 id="dashOrders" style="color:var(--primary); font-size:2rem;">0</h2>
+      <div class="glass-panel" style="padding:20px; border-left: 4px solid #4A90E2 !important;">
+        <h4 style="margin:0 0 10px 0; color:var(--text-light); font-size:0.9rem;">ออเดอร์ทั้งหมดวันนี้</h4>
+        <h2 id="dashOrders" style="margin:0; color:#4A90E2; font-size:1.8rem;">0</h2>
+      </div>
+      <div class="glass-panel" style="padding:20px; border-left: 4px solid #ef4444 !important; background: #fff5f5 !important;">
+        <h4 style="margin:0 0 10px 0; color:#ef4444; font-size:0.9rem; font-weight:bold;"><i class="fas fa-exclamation-circle"></i> ค้างดำเนินการ</h4>
+        <h2 id="dashPending" style="margin:0; color:#ef4444; font-size:1.8rem;">0</h2>
+        <div style="font-size:0.75rem; color:#ef4444; margin-top:5px;">รอรับ, จัดเตรียม, รอจัดส่ง</div>
+      </div>
+      <div class="glass-panel" style="padding:20px; border-left: 4px solid #8b5cf6 !important;">
+        <h4 style="margin:0 0 10px 0; color:var(--text-light); font-size:0.9rem;">เสร็จสิ้นแล้ววันนี้</h4>
+        <h2 id="dashCompleted" style="margin:0; color:#8b5cf6; font-size:1.8rem;">0</h2>
       </div>
     </div>
-      <div class="glass-panel mt-2" style="padding:20px;">
-        <h4>สถานะคำสั่งซื้อ (แยกตามรอบจัดส่ง)</h4>
-        <div id="custom-dashboard-chart"></div>
+
+    <!-- Charts Row -->
+    <div style="display:flex; gap:20px; margin-bottom:20px; flex-wrap:wrap;">
+      <div class="glass-panel" style="flex:1; min-width:300px; padding:20px;">
+        <h4 style="margin-top:0; color:var(--text-dark);">📈 ยอดขาย 7 วันย้อนหลัง</h4>
+        <canvas id="salesTrendChart" height="200"></canvas>
       </div>
+      <div class="glass-panel" style="flex:1; min-width:300px; padding:20px;">
+        <h4 style="margin-top:0; color:var(--text-dark);">📊 จำนวนออเดอร์ 7 วันย้อนหลัง</h4>
+        <canvas id="ordersTrendChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Insights Row -->
+    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:40px;">
+      <div class="glass-panel" style="flex:2; min-width:300px; padding:20px;">
+        <h4 style="margin-top:0; color:var(--text-dark);">🏆 5 อันดับสินค้าขายดี (สัปดาห์นี้)</h4>
+        <div id="topSellersList" style="margin-top:15px;">
+          <!-- Items will be injected here -->
+          <div style="text-align:center; color:var(--text-light); padding:20px;">กำลังโหลด...</div>
+        </div>
+      </div>
+      <div class="glass-panel" style="flex:1; min-width:250px; padding:20px; display:flex; flex-direction:column; align-items:center;">
+        <h4 style="margin-top:0; color:var(--text-dark); width:100%; text-align:left;">🛵 สัดส่วนการรับสินค้า</h4>
+        <div style="width:100%; max-width:200px; margin-top:10px;">
+          <canvas id="pickupRatioChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ORDERS -->
@@ -462,8 +501,8 @@
   </div>
 </div>
 
-  <script src="api.js?v=14"></script>
-  <script src="admin.js?v=14"></script>
+  <script src="api.js?v=15"></script>
+  <script src="admin.js?v=15"></script>
 
 </body>
 </html>
