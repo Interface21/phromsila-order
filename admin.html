@@ -196,10 +196,10 @@
         <h4 style="margin:0 0 10px 0; color:var(--text-light); font-size:0.9rem;">ออเดอร์ทั้งหมดวันนี้</h4>
         <h2 id="dashOrders" style="margin:0; color:#4A90E2; font-size:1.8rem;">0</h2>
       </div>
-      <div class="glass-panel" style="padding:20px; border-left: 4px solid #ef4444 !important; background: #fff5f5 !important;">
+      <div class="glass-panel" style="padding:20px; border-left: 4px solid #ef4444 !important; background: #fff5f5 !important; cursor: pointer;" onclick="navTo('orders')">
         <h4 style="margin:0 0 10px 0; color:#ef4444; font-size:0.9rem; font-weight:bold;"><i class="fas fa-exclamation-circle"></i> ค้างดำเนินการ</h4>
         <h2 id="dashPending" style="margin:0; color:#ef4444; font-size:1.8rem;">0</h2>
-        <div style="font-size:0.75rem; color:#ef4444; margin-top:5px;">รอรับ, จัดเตรียม, รอจัดส่ง</div>
+        <div style="font-size:0.75rem; color:#ef4444; margin-top:5px;">คลิกเพื่อดูคำสั่งซื้อ</div>
       </div>
       <div class="glass-panel" style="padding:20px; border-left: 4px solid #8b5cf6 !important;">
         <h4 style="margin:0 0 10px 0; color:var(--text-light); font-size:0.9rem;">เสร็จสิ้นแล้ววันนี้</h4>
@@ -226,14 +226,14 @@
     <!-- Insights Row -->
     <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:40px;">
       <div class="glass-panel" style="flex:2; min-width:300px; padding:20px;">
-        <h4 style="margin-top:0; color:var(--text-dark);">🏆 5 อันดับสินค้าขายดี (สัปดาห์นี้)</h4>
+        <h4 style="margin-top:0; color:var(--text-dark);">🏆 5 อันดับสินค้าขายดี (7 วันย้อนหลัง)</h4>
         <div id="topSellersList" style="margin-top:15px;">
           <!-- Items will be injected here -->
           <div style="text-align:center; color:var(--text-light); padding:20px;">กำลังโหลด...</div>
         </div>
       </div>
       <div class="glass-panel" style="flex:1; min-width:250px; padding:20px; display:flex; flex-direction:column; align-items:center;">
-        <h4 style="margin-top:0; color:var(--text-dark); width:100%; text-align:left;">🛵 สัดส่วนการรับสินค้า</h4>
+        <h4 style="margin-top:0; color:var(--text-dark); width:100%; text-align:left;">🛵 สัดส่วนการรับสินค้า (7 วันย้อนหลัง)</h4>
         <div id="pickupChartWrapper" style="position:relative; width:100%; max-width:200px; height:200px; margin-top:10px;">
           <canvas id="pickupRatioChart"></canvas>
         </div>
@@ -505,8 +505,8 @@
   </div>
 </div>
 
-  <script src="api.js?v=16"></script>
-  <script src="admin.js?v=16"></script>
+  <script src="api.js?v=17"></script>
+  <script src="admin.js?v=17"></script>
 
 </body>
 </html>
