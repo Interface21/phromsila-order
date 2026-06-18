@@ -72,16 +72,61 @@ let state = {
 
   // --- NOTIFICATION SYSTEM ---
   let notificationTimer = null;
+  let isPageVisible = true;
+  let lastActiveTime = Date.now();
+  let currentPollInterval = 30000;
+  
+  document.addEventListener('visibilitychange', () => {
+    isPageVisible = !document.hidden;
+    if (isPageVisible && state.customer) {
+      lastActiveTime = Date.now();
+      checkOrderUpdates();
+    }
+  });
+
+  ['click', 'touchstart', 'scroll', 'keypress'].forEach(evt => {
+    document.addEventListener(evt, () => {
+      lastActiveTime = Date.now();
+    }, {passive: true});
+  });
   
   function startNotificationPolling() {
     stopNotificationPolling();
     renderNotifications();
     checkOrderUpdates();
-    notificationTimer = setInterval(checkOrderUpdates, 30000); // 30s
+    scheduleNextPoll();
+  }
+  
+  function scheduleNextPoll() {
+    stopNotificationPolling();
+    notificationTimer = setTimeout(() => {
+      if (!state.customer) return; // Stop if logged out
+      
+      const idleTime = Date.now() - lastActiveTime;
+      const text = document.getElementById('activeOrdersText');
+      const activeCount = text ? (parseInt(text.textContent) || 0) : 0;
+      
+      if (!isPageVisible || idleTime > 5 * 60 * 1000) {
+        // Sleep mode: check every 5 minutes just in case
+        currentPollInterval = 5 * 60 * 1000;
+      } else if (activeCount === 0) {
+        // No active orders: check every 3 minutes
+        currentPollInterval = 3 * 60 * 1000;
+      } else {
+        // Active mode: check every 30 seconds
+        currentPollInterval = 30000;
+      }
+      
+      if (isPageVisible && idleTime <= 15 * 60 * 1000) {
+        checkOrderUpdates();
+      }
+      
+      scheduleNextPoll();
+    }, currentPollInterval);
   }
   
   function stopNotificationPolling() {
-    if (notificationTimer) clearInterval(notificationTimer);
+    if (notificationTimer) clearTimeout(notificationTimer);
     notificationTimer = null;
   }
   
