@@ -610,8 +610,17 @@ let state = {
     const payment = document.getElementById('paymentType').value;
     const { subtotal, deliveryFee, netTotal } = calculateTotal();
     
-    if (pickupType === 'delivery' && !state.customer.delivery_address) {
-      return showAlert('ข้อผิดพลาด', 'กรุณาระบุที่อยู่จัดส่งในข้อมูลลูกค้า', 'error');
+    let finalAddress = state.customer.delivery_address || '';
+    if (pickupType === 'delivery') {
+      const checkoutAddress = document.getElementById('checkoutAddress').value.trim();
+      if (!checkoutAddress) {
+        return showAlert('ข้อผิดพลาด', 'กรุณาระบุที่อยู่จัดส่ง', 'error');
+      }
+      if (checkoutAddress !== state.customer.delivery_address) {
+        state.customer.delivery_address = checkoutAddress;
+        google.script.run.saveCustomer(state.customer);
+      }
+      finalAddress = checkoutAddress;
     }
     
     const orderData = {
