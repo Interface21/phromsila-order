@@ -689,7 +689,7 @@ let state = {
     });
     
     if (filtered.length > displayedProducts.length) {
-      html += `<div style="text-align:center; padding: 20px;"><button class="btn btn-glass" onclick="loadMoreProducts()" style="width:100%; border:1px solid var(--primary); color:var(--primary);">โหลดสินค้าเพิ่มเติม <i class="fas fa-chevron-down"></i></button></div>`;
+      html += `<div style="text-align:center; padding: 20px; grid-column: 1 / -1;"><button class="btn btn-glass" onclick="loadMoreProducts()" style="width:100%; border:1px solid var(--primary); color:var(--primary);">โหลดสินค้าเพิ่มเติม <i class="fas fa-chevron-down"></i></button></div>`;
     }
     
     prodContainer.innerHTML = html;

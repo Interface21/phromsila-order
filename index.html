@@ -463,13 +463,208 @@
 
   <!-- Footer -->
   <div style="text-align: center; margin-top: 40px; padding-bottom: 20px; font-size: 0.8rem; color: var(--text-light);">
+          </div>
+          <button id="btnMyRewards" class="btn btn-glass d-none" onclick="toggleRewardsModal()" style="padding: 5px 10px; font-weight: normal; color: #8b5cf6;" title="สิทธิพิเศษและคูปอง">
+            <i class="fas fa-gift"></i>
+          </button>
+          <button id="btnMyOrders" class="btn btn-glass d-none" onclick="switchView('view-tracking')" style="padding: 5px 10px; font-weight: normal;" title="ออเดอร์ของฉัน">
+            <span id="activeOrdersText"></span> <i class="fas fa-truck-fast"></i>
+          </button>
+          <button id="btnLogout" class="btn btn-danger d-none" onclick="handleLogout()" style="padding: 5px 10px;" title="ออกจากระบบ"><i class="fas fa-sign-out-alt"></i></button>
+          <button id="btnLogin" class="btn btn-primary" onclick="switchView('view-login')" style="padding: 5px 10px;" title="เข้าสู่ระบบ"><i class="fas fa-sign-in-alt"></i></button>
+        </div>
+      </div>
+      <!-- Dynamic Search & Category Row -->
+      <div style="display:flex; gap:10px; margin-top: 15px; align-items:center;">
+        
+        <!-- Default State: Category Selectbox + Search Button -->
+        <select id="categorySelect" class="input-control" style="margin-bottom:0; height:45px; border-radius:30px; padding: 0 20px; cursor:pointer; flex-grow: 1; transition: all 0.3s ease; box-shadow: var(--glass-shadow); border: 1px solid rgba(255,255,255,0.4);" onchange="setCategory(this.value)">
+          <option value="all">ทุกหมวดหมู่</option>
+        </select>
+        
+        <button id="btnOpenSearch" class="btn btn-glass" style="height:45px; border-radius:30px; padding:0 20px; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; border:1px solid rgba(0,0,0,0.1); color: var(--text-dark);" onclick="toggleSearchMode(true)">
+          <i class="fas fa-search"></i> <span>ค้นหาสินค้า</span>
+        </button>
+
+        <!-- Search Mode: Category Button + Search Input -->
+        <button id="btnOpenCat" class="btn btn-primary d-none" style="height:45px; border-radius:30px; padding:0 15px; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;" onclick="toggleSearchMode(false)">
+          <i class="fas fa-layer-group"></i> <span>หมวดหมู่</span>
+        </button>
+
+        <div id="searchWrapper" class="d-none" style="position:relative; flex-grow:1;">
+          <i class="fas fa-search" style="position:absolute; left:15px; top:15px; color:var(--text-light);"></i>
+          <input type="text" id="searchInput" class="input-control" placeholder="ค้นหาสินค้า..." onkeyup="filterProducts()" style="margin-bottom:0; height:45px; border-radius:30px; padding-left:40px; padding-right:40px; width:100%; box-shadow: var(--glass-shadow); border: 1px solid rgba(255,255,255,0.4);">
+          <i class="fas fa-times" style="position:absolute; right:15px; top:15px; color:var(--text-light); cursor:pointer;" onclick="toggleSearchMode(false); document.getElementById('searchInput').value=''; filterProducts();"></i>
+        </div>
+
+      </div>
+    </div>
+    
+    <!-- Shop Closed Banner -->
+    <div id="shopClosedBanner" class="d-none" style="background-color:#fee2e2; border:1px solid #f87171; color:#b91c1c; padding:10px 15px; margin-bottom:15px; text-align:center; border-radius:8px; font-size:0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+      <strong style="display:block; margin-bottom:2px; font-size:0.95rem;">วันนี้ร้านปิดทำการ</strong>
+      ท่านสามารถเรียกดูสินค้าได้ แต่ระบบจะไม่เปิดรับคำสั่งซื้อในขณะนี้ ขออภัยในความไม่สะดวกค่ะ
+    </div>
+
+    <div class="product-list" id="productContainer">
+      <!-- Products rendered here via JS -->
+      <div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+    </div>
+  </div>
+
+  <!-- ================= CART & CHECKOUT VIEW ================= -->
+  <div id="view-checkout" class="view-section" style="padding: 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <button class="btn btn-glass" onclick="switchView('view-home')"><i class="fas fa-arrow-left"></i></button>
+        <h2 style="margin: 0;">ตะกร้าสินค้า</h2>
+      </div>
+      <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9rem; border-radius: 8px; border:none; background:#ef4444; color:white; cursor:pointer;" onclick="clearCart()" id="btnClearCart">
+        <i class="fas fa-trash-alt"></i> ล้างทั้งหมด
+      </button>
+    </div>
+    
+    <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;" id="cartItemsContainer">
+      <!-- Cart items -->
+    </div>
+    
+    <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;">
+      <h4>รูปแบบการรับสินค้า</h4>
+      <div class="input-group mt-1">
+        <select id="pickupType" class="input-control" onchange="calculateTotal()">
+          <option value="delivery">จัดส่งถึงที่</option>
+          <option value="shop">รับที่ร้าน</option>
+        </select>
+        <div id="lateDeliveryWarning" class="d-none" style="color:#ef4444; font-size:0.85rem; margin-top:5px; font-weight:500;">
+          <i class="fas fa-info-circle"></i> ไม่สามารถจัดส่งในรอบสุดท้าย (15.00 น.) ได้ ต้องรับที่ร้านเท่านั้น
+        </div>
+      </div>
+      
+      <div id="pickupTimeSection">
+        <h4>รอบจัดส่ง/รับสินค้า</h4>
+        <div class="input-group mt-1">
+          <select id="pickupTime" class="input-control">
+            <option value="09:00">09:00</option>
+            <option value="11:00">11:00</option>
+            <option value="13:00">13:00</option>
+            <option value="15:00">15:00</option>
+          </select>
+          <small style="color: #ef4444; font-weight: bold;">* เลือกได้ก่อนเวลารอบอย่างน้อย 30 นาที</small>
+        </div>
+      </div>
+      
+      <div id="deliveryAddressSection" class="input-group mt-2">
+        <label>ที่อยู่จัดส่ง <span style="font-size:0.8rem; color:var(--text-light); font-weight:normal;">(สามารถแก้ไขเพื่อบันทึกเป็นที่อยู่ใหม่ได้)</span></label>
+        <textarea id="checkoutAddress" class="input-control" rows="2"></textarea>
+      </div>
+      
+      <h4 class="mt-2">วิธีชำระเงิน</h4>
+      <div class="input-group mt-1">
+        <select id="paymentType" class="input-control">
+          <option value="cash">เงินสดปลายทาง</option>
+          <option value="transfer_qr">โอนเงิน / สแกนคิวอาร์โค้ด</option>
+          <option value="thaiplus">โครงการรัฐ</option>
+        </select>
+      </div>
+      <div id="checkoutCouponSection" class="input-group mt-2 d-none">
+        <h4 class="mt-2" style="color: #ef4444;"><i class="fas fa-ticket-alt"></i> คูปองส่วนลด</h4>
+        <select id="checkoutCouponSelect" class="input-control mt-1" onchange="calculateTotal()" style="border-color: #ef4444; color: #ef4444; font-weight: bold;">
+          <option value="">ไม่ใช้คูปอง</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+        <span>รวมค่าสินค้า</span>
+        <span id="summarySubtotal">฿0.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px;" id="deliveryFeeSection">
+        <span>ค่าจัดส่ง <small id="deliveryFeeCondition" style="color:var(--text-light)"></small></span>
+        <span id="summaryDeliveryFee">฿0.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; color: #ef4444;" id="couponDiscountSection" class="d-none">
+        <span>ส่วนลดคูปอง</span>
+        <span id="summaryCouponDiscount">-฿0.00</span>
+      </div>
+      <hr style="border:none; border-top:1px dashed #ccc; margin:10px 0;">
+      <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem; color:var(--primary);">
+        <span>ยอดสุทธิ</span>
+        <span id="summaryTotal">฿0.00</span>
+      </div>
+    </div>
+    
+    <button class="btn btn-primary w-100" style="padding: 15px; font-size:1.1rem; margin-bottom: 10px;" onclick="placeOrder()">ยืนยันการสั่งซื้อ</button>
+    <button class="btn btn-glass w-100" style="padding: 15px; font-size:1.1rem;" onclick="switchView('view-home')">กลับไปเลือกสินค้าต่อ</button>
+  </div>
+  
+  <!-- ================= TRACKING VIEW ================= -->
+  <div id="view-tracking" class="view-section" style="padding: 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <button class="btn btn-glass" onclick="switchView('view-home')"><i class="fas fa-arrow-left"></i></button>
+        <h2 style="margin: 0;">ติดตามสถานะการสั่งซื้อ</h2>
+      </div>
+      <button class="btn btn-glass" onclick="loadOrders()" title="รีเฟรช"><i class="fas fa-sync-alt"></i></button>
+    </div>
+    <div style="display:flex; border-bottom: 1px solid #e2e8f0; margin-bottom: 15px;">
+      <div id="tabActive" style="flex:1; text-align:center; padding:10px; cursor:pointer; font-weight:bold; border-bottom: 2px solid var(--primary); color: var(--primary);" onclick="switchOrderTab('active')">ล่าสุด</div>
+      <div id="tabHistory" style="flex:1; text-align:center; padding:10px; cursor:pointer; color: var(--text-light);" onclick="switchOrderTab('history')">ประวัติ</div>
+    </div>
+    <div id="ordersContainer">
+      <div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+    </div>
+    <div id="historyOrdersContainer" style="display:none;"></div>
+    <div id="loadMoreHistoryBtn" style="display:none; text-align:center; margin-top:15px; margin-bottom:20px;">
+      <button class="btn btn-glass" onclick="loadMoreHistory()" style="width:100%; border:1px solid var(--primary); color:var(--primary);">โหลดเพิ่มเติม</button>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- Rewards Modal -->
+  <div id="rewardsModal" class="glass-panel d-none" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; z-index: 2000; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 style="margin: 0; color: var(--primary);"><i class="fas fa-gift"></i> สิทธิพิเศษของคุณ</h3>
+      <button class="btn btn-glass" onclick="toggleRewardsModal()" style="padding: 5px 10px;"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div style="background: rgba(74, 144, 226, 0.1); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px; border: 1px dashed var(--primary);">
+      <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 5px;">แต้มสะสมคงเหลือ (จัดส่ง)</div>
+      <div style="font-size: 2.5rem; font-weight: bold; color: var(--primary); line-height: 1;" id="rewardsPointsDisplay">0</div>
+      <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 10px;" id="rewardsConditionDisplay"></div>
+    </div>
+    
+    <button id="btnRedeemCoupon" class="btn btn-primary w-100" style="margin-bottom: 20px; font-weight: bold; box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);" onclick="redeemCouponCustomer()" disabled>แลกคูปองส่วนลด</button>
+    
+    <h4 style="margin-bottom: 10px; font-size: 1rem;">คูปองของคุณ</h4>
+    <div id="myCouponsList" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+      <div style="text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 10px;">ไม่มีคูปองที่ใช้ได้</div>
+    </div>
+  </div>
+  <div id="rewardsModalOverlay" class="d-none" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1999; backdrop-filter: blur(3px);" onclick="toggleRewardsModal()"></div>
+
+  <!-- Floating Cart Badge -->
+  <div class="floating-cart d-none" id="floatingCart" onclick="switchView('view-checkout')">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <i class="fas fa-shopping-cart fa-lg"></i>
+      <div>
+        <div style="font-weight:bold;" id="floatingCartCount">0 รายการ</div>
+        <div style="font-size:0.8rem;">แตะเพื่อดูตะกร้าสินค้า</div>
+      </div>
+    </div>
+    <div style="font-weight:bold; font-size:1.2rem;" id="floatingCartTotal">฿0.00</div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align: center; margin-top: 40px; padding-bottom: 20px; font-size: 0.8rem; color: var(--text-light);">
     <span onclick="goToAdmin()" style="cursor:pointer;"><i class="fas fa-user-shield"></i> ล็อกอินระบบหลังร้าน</span> | Developed by Interface21
   </div>
 
 </div>
 
   <script src="api.js?v=23"></script>
-  <script src="app.js?v=24"></script>
+  <script src="app.js?v=25"></script>
 
 </body>
 </html>
