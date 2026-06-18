@@ -523,6 +523,18 @@ let state = {
       
       const imgHtml = pImg ? `<img src="${pImg}" class="product-img" alt="${p.name}">` : `<div class="product-img" style="display:flex; align-items:center; justify-content:center; color:#ccc; font-size:2rem;"><i class="fas fa-image"></i></div>`;
       
+      let promoBadge = '';
+      if (isPromo && p.promo_expire) {
+        const expireDate = new Date(p.promo_expire);
+        const diffTime = expireDate - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+        const thaiDate = expireDate.getDate() + ' ' + thaiMonths[expireDate.getMonth()] + ' ' + (expireDate.getFullYear() + 543).toString().substr(-2);
+        
+        const badgeColor = diffDays <= 3 ? '#ef4444' : '#f59e0b';
+        promoBadge = `<div style="position: absolute; top: -10px; left: -10px; background: ${badgeColor}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10;">เหลือ ${diffDays} วัน (ถึง ${thaiDate})</div>`;
+      }
+
       const inCart = state.cart.find(c => c.product_id === p.id);
       let actionHtml = '';
       if (inCart) {
@@ -543,6 +555,7 @@ let state = {
         
       html += `
         <div class="product-card glass">
+          ${promoBadge}
           ${imgHtml}
           <div class="product-info">
             <div class="product-title">${p.name}</div>
