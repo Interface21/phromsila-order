@@ -18,10 +18,17 @@
     body { padding-bottom: 80px; }
     
     .app-container {
-      max-width: 500px;
+      width: 100%;
       margin: 0 auto;
       min-height: 100vh;
       position: relative;
+    }
+    @media (min-width: 1024px) {
+      .app-container {
+        max-width: 500px;
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      }
     }
     
     .header {
@@ -74,15 +81,25 @@
     .cat-badge.active { background: var(--primary); color: white; }
     
     /* Product List */
-    .product-list { padding: 0 20px; }
+    .product-list { 
+      padding: 0 20px; 
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+    @media (min-width: 768px) {
+      .product-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
     
     .product-card {
       display: flex;
       align-items: center;
       padding: 10px;
-      margin-bottom: 15px;
       gap: 15px;
       position: relative;
+      height: 100%;
     }
     
     .product-img {
