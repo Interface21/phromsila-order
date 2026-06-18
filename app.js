@@ -769,13 +769,13 @@ let state = {
     const now = new Date();
     const currentTimeVal = now.getHours() + (now.getMinutes() / 60);
 
-    if (currentTimeVal >= 14) {
+    if (currentTimeVal >= 14.5) {
       Array.from(pickupTypeSelect.options).forEach(opt => {
         if (opt.value === 'delivery') opt.disabled = true;
       });
       if (pickupTypeSelect.value === 'delivery') {
         pickupTypeSelect.value = 'shop';
-        Swal.fire('แจ้งเตือน', 'เลยเวลา 14:00 น. แล้ว ไม่สามารถจัดส่งในรอบสุดท้าย (15:00 น.) ได้ค่ะ ต้องรับที่ร้านเท่านั้น', 'warning');
+        Swal.fire('แจ้งเตือน', 'เลยเวลา 14:30 น. แล้ว ไม่สามารถจัดส่งในรอบสุดท้าย (15:00 น.) ได้ค่ะ ต้องรับที่ร้านเท่านั้น', 'warning');
       }
       if (warningEl) warningEl.classList.remove('d-none');
     } else {
