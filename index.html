@@ -252,6 +252,9 @@
                </div>
             </div>
           </div>
+          <button id="btnMyRewards" class="btn btn-glass d-none" onclick="toggleRewardsModal()" style="padding: 5px 10px; font-weight: normal; color: #8b5cf6;" title="สิทธิพิเศษและคูปอง">
+            <i class="fas fa-gift"></i>
+          </button>
           <button id="btnMyOrders" class="btn btn-glass d-none" onclick="switchView('view-tracking')" style="padding: 5px 10px; font-weight: normal;" title="ออเดอร์ของฉัน">
             <span id="activeOrdersText"></span> <i class="fas fa-truck-fast"></i>
           </button>
@@ -351,6 +354,12 @@
           <option value="thaiplus">โครงการรัฐ</option>
         </select>
       </div>
+      <div id="checkoutCouponSection" class="input-group mt-2 d-none">
+        <h4 class="mt-2" style="color: #ef4444;"><i class="fas fa-ticket-alt"></i> คูปองส่วนลด</h4>
+        <select id="checkoutCouponSelect" class="input-control mt-1" onchange="calculateTotal()" style="border-color: #ef4444; color: #ef4444; font-weight: bold;">
+          <option value="">ไม่ใช้คูปอง</option>
+        </select>
+      </div>
     </div>
     
     <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;">
@@ -361,6 +370,10 @@
       <div style="display:flex; justify-content:space-between; margin-bottom:10px;" id="deliveryFeeSection">
         <span>ค่าจัดส่ง <small id="deliveryFeeCondition" style="color:var(--text-light)"></small></span>
         <span id="summaryDeliveryFee">฿0.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; color: #ef4444;" id="couponDiscountSection" class="d-none">
+        <span>ส่วนลดคูปอง</span>
+        <span id="summaryCouponDiscount">-฿0.00</span>
       </div>
       <hr style="border:none; border-top:1px dashed #ccc; margin:10px 0;">
       <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem; color:var(--primary);">
@@ -395,6 +408,30 @@
     </div>
   </div>
 
+  </div>
+
+  <!-- Rewards Modal -->
+  <div id="rewardsModal" class="glass-panel d-none" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; z-index: 2000; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 style="margin: 0; color: #8b5cf6;"><i class="fas fa-gift"></i> สิทธิพิเศษของคุณ</h3>
+      <button class="btn btn-glass" onclick="toggleRewardsModal()" style="padding: 5px 10px;"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div style="background: rgba(139, 92, 246, 0.1); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px; border: 1px dashed #8b5cf6;">
+      <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 5px;">แต้มสะสมคงเหลือ (จัดส่ง)</div>
+      <div style="font-size: 2.5rem; font-weight: bold; color: #8b5cf6; line-height: 1;" id="rewardsPointsDisplay">0</div>
+      <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 10px;" id="rewardsConditionDisplay"></div>
+    </div>
+    
+    <button id="btnRedeemCoupon" class="btn btn-primary w-100" style="margin-bottom: 20px; background: #8b5cf6; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);" onclick="redeemCouponCustomer()" disabled>แลกคูปองส่วนลด</button>
+    
+    <h4 style="margin-bottom: 10px; font-size: 1rem;">คูปองของคุณ</h4>
+    <div id="myCouponsList" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+      <div style="text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 10px;">ไม่มีคูปองที่ใช้ได้</div>
+    </div>
+  </div>
+  <div id="rewardsModalOverlay" class="d-none" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1999; backdrop-filter: blur(3px);" onclick="toggleRewardsModal()"></div>
+
   <!-- Floating Cart Badge -->
   <div class="floating-cart d-none" id="floatingCart" onclick="switchView('view-checkout')">
     <div style="display:flex; align-items:center; gap:10px;">
@@ -415,7 +452,7 @@
 </div>
 
   <script src="api.js?v=22"></script>
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=32"></script>
 
 </body>
 </html>

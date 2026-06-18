@@ -5,6 +5,7 @@ let state = {
     products: [],
     cart: [],
     orders: [],
+    coupons: [],
     currentCategory: 'promo',
     searchQuery: ''
   };
@@ -34,6 +35,10 @@ let state = {
     if (state.customer) {
       document.getElementById('userNameDisplay').textContent = 'คุณ' + state.customer.name;
       document.getElementById('btnMyOrders').classList.remove('d-none');
+      
+      const btnRewards = document.getElementById('btnMyRewards');
+      if (btnRewards) btnRewards.classList.remove('d-none');
+      
       document.getElementById('btnLogout').classList.remove('d-none');
       document.getElementById('btnLogin').classList.add('d-none');
       
@@ -57,6 +62,7 @@ let state = {
         btn.classList.remove('d-none');
       }).getActiveOrderCount(state.customer.id);
       
+      loadCustomerCoupons();
       startNotificationPolling();
     } else {
       document.getElementById('userNameDisplay').textContent = 'คุณลูกค้า';
@@ -309,6 +315,114 @@ let state = {
       confirmButtonColor: '#4A90E2',
       customClass: { popup: 'glass-panel' }
     });
+  }
+
+  // --- REWARDS & COUPONS ---
+  function loadCustomerCoupons() {
+    if (!state.customer) return;
+    google.script.run.withSuccessHandler(res => {
+      if (res.success) {
+        state.coupons = res.data || [];
+        updateCheckoutCouponUI();
+      }
+    }).getCustomerCoupons(state.customer.id);
+  }
+
+  function toggleRewardsModal() {
+    const modal = document.getElementById('rewardsModal');
+    const overlay = document.getElementById('rewardsModalOverlay');
+    if (!modal || !overlay) return;
+    
+    if (modal.classList.contains('d-none')) {
+      renderRewardsModal();
+      modal.classList.remove('d-none');
+      overlay.classList.remove('d-none');
+    } else {
+      modal.classList.add('d-none');
+      overlay.classList.add('d-none');
+    }
+  }
+
+  function renderRewardsModal() {
+    if (!state.customer || !state.config) return;
+    const reqCount = parseInt(state.config.delivery_count || 10);
+    const discountAmt = parseFloat(state.config.coupon_discount || 0);
+    
+    const accumulate = parseInt(state.customer.delivery_count_accumulate || 0);
+    const usage = parseInt(state.customer.delivery_count_usage || 0);
+    const available = accumulate - usage;
+    
+    document.getElementById('rewardsPointsDisplay').textContent = available;
+    document.getElementById('rewardsConditionDisplay').textContent = `* ครบ ${reqCount} ครั้ง แลกคูปองลด ${discountAmt}฿ ได้ 1 ใบ`;
+    
+    const btnRedeem = document.getElementById('btnRedeemCoupon');
+    if (available >= reqCount) {
+      btnRedeem.disabled = false;
+      btnRedeem.textContent = 'แลกคูปองส่วนลด';
+    } else {
+      btnRedeem.disabled = true;
+      btnRedeem.textContent = `ขาดอีก ${reqCount - available} ครั้ง`;
+    }
+    
+    // Render My Coupons
+    const list = document.getElementById('myCouponsList');
+    if (state.coupons && state.coupons.length > 0) {
+      list.innerHTML = state.coupons.map(c => `
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #8b5cf6; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-weight: bold; color: #334155;">ส่วนลด ฿${c.discount_amount}</div>
+          <div style="font-size: 0.8rem; color: #8b5cf6;">พร้อมใช้งาน</div>
+        </div>
+      `).join('');
+    } else {
+      list.innerHTML = `<div style="text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 10px;">ไม่มีคูปองที่ใช้ได้</div>`;
+    }
+  }
+
+  function redeemCouponCustomer() {
+    if (!state.customer) return;
+    Swal.showLoading();
+    google.script.run.withFailureHandler(e => {
+      Swal.close();
+      showAlert('Error', e.message || e.toString(), 'error');
+    }).withSuccessHandler(res => {
+      if (res.success) {
+        // Refresh customer data & coupons
+        google.script.run.withSuccessHandler(cRes => {
+          if (cRes.success) {
+            state.customer = cRes.data;
+            localStorage.setItem('phromsila_customer', JSON.stringify(cRes.data));
+            loadCustomerCoupons();
+            setTimeout(() => {
+              Swal.close();
+              renderRewardsModal();
+              showAlert('สำเร็จ', 'แลกคูปองเรียบร้อยแล้ว!', 'success');
+            }, 1000);
+          }
+        }).loginCustomer(state.customer.mobile_no);
+      } else {
+        Swal.close();
+        showAlert('Error', res.message, 'error');
+      }
+    }).redeemCoupon(state.customer.id);
+  }
+
+  function updateCheckoutCouponUI() {
+    const section = document.getElementById('checkoutCouponSection');
+    const select = document.getElementById('checkoutCouponSelect');
+    if (!section || !select) return;
+    
+    if (state.coupons && state.coupons.length > 0) {
+      section.classList.remove('d-none');
+      let html = '<option value="">ไม่ใช้คูปอง</option>';
+      state.coupons.forEach(c => {
+        html += `<option value="${c.id}" data-discount="${c.discount_amount}">คูปองส่วนลด ฿${c.discount_amount}</option>`;
+      });
+      select.innerHTML = html;
+    } else {
+      section.classList.add('d-none');
+      select.innerHTML = '<option value="">ไม่ใช้คูปอง</option>';
+    }
+    if (typeof calculateTotal === 'function') calculateTotal();
   }
 
   // --- LOGIN / REGISTER ---
@@ -825,10 +939,26 @@ let state = {
     
     document.getElementById('summaryDeliveryFee').textContent = `฿${deliveryFee.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
     
-    const netTotal = subtotal + deliveryFee;
+    const couponSelect = document.getElementById('checkoutCouponSelect');
+    let couponDiscount = 0;
+    let usedCouponId = '';
+    if (couponSelect && couponSelect.value) {
+      usedCouponId = couponSelect.value;
+      const opt = couponSelect.options[couponSelect.selectedIndex];
+      couponDiscount = parseFloat(opt.getAttribute('data-discount') || 0);
+    }
+    
+    if (couponDiscount > 0) {
+      document.getElementById('couponDiscountSection').classList.remove('d-none');
+      document.getElementById('summaryCouponDiscount').textContent = `-฿${couponDiscount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    } else {
+      document.getElementById('couponDiscountSection').classList.add('d-none');
+    }
+    
+    const netTotal = Math.max(0, subtotal + deliveryFee - couponDiscount);
     document.getElementById('summaryTotal').textContent = `฿${netTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
     
-    return { subtotal, deliveryFee, netTotal };
+    return { subtotal, deliveryFee, couponDiscount, usedCouponId, netTotal };
   }
 
   function placeOrder() {
@@ -846,7 +976,7 @@ let state = {
     const rawPickupTime = document.getElementById('pickupTime').value;
     const pickupTime = pickupType === 'delivery' ? rawPickupTime : '-';
     const payment = document.getElementById('paymentType').value;
-    const { subtotal, deliveryFee, netTotal } = calculateTotal();
+    const { subtotal, deliveryFee, couponDiscount, usedCouponId, netTotal } = calculateTotal();
     
     let finalAddress = state.customer.delivery_address || '';
     if (pickupType === 'delivery') {
@@ -869,6 +999,8 @@ let state = {
       payment: payment,
       delivery_fee: deliveryFee,
       total: subtotal,
+      coupon_discount: couponDiscount,
+      used_coupon_id: usedCouponId,
       net_total: netTotal,
       pos_order_ref: ''
     };

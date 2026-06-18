@@ -895,6 +895,85 @@ let adminState = {
     google.script.run.saveCustomer(c);
   }
 
+  // --- Coupons ---
+  function renderCoupons() {
+    const tbody = document.getElementById('couponTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    const searchQ = document.getElementById('searchCouponAdmin') ? document.getElementById('searchCouponAdmin').value.toLowerCase() : '';
+    
+    // Filter customers who have accumulate > 0
+    let filteredCustomers = adminState.customers.filter(c => parseInt(c.delivery_count_accumulate || 0) > 0);
+    
+    if (searchQ) {
+      filteredCustomers = filteredCustomers.filter(c => 
+        (c.name && c.name.toLowerCase().includes(searchQ)) || 
+        (c.mobile_no && c.mobile_no.toLowerCase().includes(searchQ))
+      );
+    }
+    
+    adminState.couponPage = adminState.couponPage || 1;
+    const limit = 10;
+    const startIndex = (adminState.couponPage - 1) * limit;
+    const displayed = filteredCustomers.slice(startIndex, startIndex + limit);
+    
+    const reqCount = parseInt(adminState.config.delivery_count || 10);
+    
+    displayed.forEach(c => {
+      const accumulate = parseInt(c.delivery_count_accumulate || 0);
+      const usage = parseInt(c.delivery_count_usage || 0);
+      const available = accumulate - usage;
+      
+      const canRedeem = available >= reqCount;
+      const redeemBtn = canRedeem ? `<button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="redeemCouponForCustomer('${c.id}')"><i class="fas fa-gift"></i> แลกคูปอง</button>` : `<span style="font-size: 0.8rem; color: #94a3b8;">ยังไม่ถึงเกณฑ์</span>`;
+      
+      tbody.innerHTML += `
+        <tr>
+          <td>${c.name}</td>
+          <td>${c.mobile_no}</td>
+          <td>${accumulate}</td>
+          <td style="color: ${canRedeem ? 'var(--success)' : 'var(--text-dark)'}; font-weight: bold;">${available}</td>
+          <td>${redeemBtn}</td>
+        </tr>
+      `;
+    });
+    
+    const totalPages = Math.ceil(filteredCustomers.length / limit);
+    let pageHtml = '';
+    for(let i=1; i<=totalPages; i++) {
+      pageHtml += `<button class="btn ${i === adminState.couponPage ? 'btn-primary' : 'btn-glass'}" style="padding:5px 10px; margin: 0 2px;" onclick="adminState.couponPage=${i}; renderCoupons()">${i}</button>`;
+    }
+    const pagDiv = document.getElementById('couponPagination');
+    if(pagDiv) pagDiv.innerHTML = totalPages > 1 ? pageHtml : '';
+  }
+
+  function redeemCouponForCustomer(customerId) {
+    Swal.fire({
+      title: 'ยืนยันแลกคูปอง?',
+      text: "คุณต้องการแลกคูปองส่วนลดให้ลูกค้าท่านนี้ใช่หรือไม่?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.showLoading();
+        google.script.run.withFailureHandler(e => {
+          Swal.close();
+          Swal.fire('Error', e.message || e.toString(), 'error');
+        }).withSuccessHandler(res => {
+          if (res.success) {
+            Swal.fire('สำเร็จ', 'แลกคูปองให้ลูกค้าเรียบร้อยแล้ว', 'success');
+            google.script.run.withSuccessHandler(r => { adminState.customers = r.data; renderCoupons(); renderCustomers(); }).getCustomers();
+          } else {
+            Swal.fire('Error', res.message || 'เกิดข้อผิดพลาด', 'error');
+          }
+        }).redeemCoupon(customerId);
+      }
+    });
+  }
+
   function toggleProductActive(id, el) {
     const p = adminState.products.find(x => x.id === id);
     if (!p) return;

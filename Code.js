@@ -23,6 +23,31 @@ function doPost(e) {
       'getProducts': getProducts,
       'saveProduct': saveProduct,
       'deleteProduct': deleteProduct,
+function doGet(e) {
+  return ContentService.createTextOutput("API is running. Use POST for data requests.");
+}
+
+function doPost(e) {
+  let result = { success: false, message: 'Invalid request' };
+  
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    const action = payload.action;
+    const args = payload.data || [];
+    
+    // Dispatch map
+    const handlers = {
+      'setupDatabase': setupDatabase,
+      'getScriptUrl': getScriptUrl,
+      'adminLogin': adminLogin,
+      'getConfig': getConfig,
+      'updateConfig': updateConfig,
+      'getCatalogs': getCatalogs,
+      'saveCatalog': saveCatalog,
+      'deleteCatalog': deleteCatalog,
+      'getProducts': getProducts,
+      'saveProduct': saveProduct,
+      'deleteProduct': deleteProduct,
       'getCustomers': getCustomers,
       'saveCustomer': saveCustomer,
       'deleteCustomer': deleteCustomer,
@@ -32,7 +57,9 @@ function doPost(e) {
       'getOrdersByCustomer': getOrdersByCustomer,
       'updateOrderStatus': updateOrderStatus,
       'placeOrder': placeOrder,
-      'removeOrderItem': removeOrderItem
+      'removeOrderItem': removeOrderItem,
+      'getCustomerCoupons': getCustomerCoupons,
+      'redeemCoupon': redeemCoupon
     };
     
     if (handlers[action]) {
@@ -82,7 +109,7 @@ function getUuid() {
 }
 
 function getSheetDataAsObjects(sheetName) {
-  const sheet = getSheet(sheetName);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sheet) return [];
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return [];
@@ -393,8 +420,33 @@ function updateOrderStatus(id, status, reason = "") {
     const row = items[index]._rowIndex;
     // status is in column 13
     sheet.getRange(row, 13).setValue(status);
-    if (status === 'cancel' && reason) {
-      sheet.getRange(row, 14).setValue(reason);
+    if (status === 'cancel') {
+      if (reason) sheet.getRange(row, 14).setValue(reason);
+      
+      const orderData = items[index];
+      // Reverse Delivery Count if applicable
+      if (orderData.pickup_type === 'delivery') {
+        const custSheet = getSheet('customer');
+        const customers = getSheetDataAsObjects('customer');
+        const cIndex = customers.findIndex(c => c.id === orderData.customer_id);
+        if (cIndex >= 0) {
+          const cRow = customers[cIndex]._rowIndex;
+          let currentAcc = parseInt(customers[cIndex].delivery_count_accumulate || 0);
+          if (currentAcc > 0) currentAcc--;
+          custSheet.getRange(cRow, 5).setValue(currentAcc);
+        }
+      }
+      
+      // Restore Coupon if applicable
+      const couponSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('customer_coupon');
+      if (couponSheet) {
+        const coupons = getSheetDataAsObjects('customer_coupon');
+        const cpIndex = coupons.findIndex(c => c.used_order_id === id);
+        if (cpIndex >= 0) {
+          const cpRow = coupons[cpIndex]._rowIndex;
+          couponSheet.getRange(cpRow, 5, 1, 2).setValues([['active', '']]);
+        }
+      }
     }
     return { success: true };
   }
@@ -447,13 +499,33 @@ function placeOrder(orderData, cartItems) {
     ]);
   });
   
+  // Handle Coupon Usage
+  if (orderData.used_coupon_id) {
+    const couponSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('customer_coupon');
+    if (couponSheet) {
+      const coupons = getSheetDataAsObjects('customer_coupon');
+      const cpIndex = coupons.findIndex(c => c.id === orderData.used_coupon_id);
+      if (cpIndex >= 0) {
+        const cpRow = coupons[cpIndex]._rowIndex;
+        couponSheet.getRange(cpRow, 5, 1, 2).setValues([['used', orderId]]);
+      }
+    }
+  }
+
+  // Handle Delivery Accumulation
+  if (orderData.pickup_type === 'delivery') {
+    const custSheet = getSheet('customer');
+    const customers = getSheetDataAsObjects('customer');
+    const cIndex = customers.findIndex(c => c.id === orderData.customer_id);
+    if (cIndex >= 0) {
+      const cRow = customers[cIndex]._rowIndex;
+      const currentAcc = parseInt(customers[cIndex].delivery_count_accumulate || 0);
+      custSheet.getRange(cRow, 5).setValue(currentAcc + 1);
+    }
+  }
+  
   return { success: true, orderNo: orderNo };
 }
-// fix  
-// force push  
-// fix ref error  
-// fix  
-// fix handlers  
 
 function removeOrderItem(orderId, detailId) {
   const detailSheet = getSheet('order_detail');

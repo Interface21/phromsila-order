@@ -172,6 +172,7 @@
   <div class="nav-item" onclick="navTo('products')"><i class="fas fa-box"></i> สินค้า</div>
   <div class="nav-item" onclick="navTo('catalogs')"><i class="fas fa-tags"></i> หมวดหมู่สินค้า</div>
   <div class="nav-item" onclick="navTo('customers')"><i class="fas fa-users"></i> ลูกค้า</div>
+  <div class="nav-item" onclick="navTo('coupons')"><i class="fas fa-gift"></i> สิทธิ์การแลกคูปอง</div>
   <div class="nav-item" onclick="navTo('config')"><i class="fas fa-cog"></i> ตั้งค่าระบบ</div>
   <div style="flex-grow:1"></div>
   <div class="nav-item text-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</div>
@@ -321,6 +322,24 @@
         <tbody id="customerTableBody"></tbody>
       </table>
       <div id="customerPagination" style="margin-top:20px; display:flex; justify-content:center; gap:5px;"></div>
+    </div>
+  </div>
+
+  <!-- COUPONS -->
+  <div id="view-coupons" class="view-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap: wrap; gap: 10px;">
+      <h2 style="margin:0;">สิทธิ์การแลกคูปอง</h2>
+      <div style="position:relative; min-width:200px;">
+        <i class="fas fa-search" style="position:absolute; left:12px; top:10px; color:var(--text-light);"></i>
+        <input type="text" id="searchCouponAdmin" class="input-control" placeholder="ค้นหาชื่อ, เบอร์โทร..." onkeyup="adminState.couponPage=1; renderCoupons()" style="padding-left:35px; height:36px; margin-bottom:0;">
+      </div>
+    </div>
+    <div class="glass-panel mt-2" style="padding:20px;">
+      <table class="glass-table">
+        <thead><tr><th>ชื่อลูกค้า</th><th>เบอร์โทรศัพท์</th><th>ยอดสะสม (ครั้ง)</th><th>แต้มคงเหลือ</th><th>จัดการ</th></tr></thead>
+        <tbody id="couponTableBody"></tbody>
+      </table>
+      <div id="couponPagination" style="margin-top:20px; display:flex; justify-content:center; gap:5px;"></div>
     </div>
   </div>
 
