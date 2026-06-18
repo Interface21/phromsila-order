@@ -147,6 +147,17 @@ let state = {
       }
     }
   };
+
+  // Close notifications when clicking outside
+  document.addEventListener('click', (e) => {
+    const dd = document.getElementById('notificationDropdown');
+    const bellBtn = document.querySelector('button[onclick="toggleNotifications()"]');
+    if (dd && !dd.classList.contains('d-none')) {
+      if (!dd.contains(e.target) && (!bellBtn || !bellBtn.contains(e.target))) {
+        dd.classList.add('d-none');
+      }
+    }
+  });
   
   function checkOrderUpdates() {
     if (!state.customer) return;
