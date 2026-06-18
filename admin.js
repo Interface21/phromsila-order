@@ -224,11 +224,15 @@ let adminState = {
     const cust = adminState.customers.find(c => c.id === o.customer_id);
     const custName = cust ? cust.name : 'ไม่ระบุ';
     
+    const paymentText = o.payment === 'cash' ? '<span style="color:#eab308; font-weight:bold;">เงินสดปลายทาง</span>' : '<span style="color:#3b82f6; font-weight:bold;">โอนเงิน / สแกนคิวอาร์โค้ด</span>';
+    const custPhone = cust ? cust.phone : 'ไม่ระบุ';
+    const deliveryAddr = o.pickup_type === 'delivery' ? `<br>ที่อยู่จัดส่ง: ${cust ? (cust.delivery_address || 'ไม่ระบุ') : 'ไม่ระบุ'}` : '';
+    
     document.getElementById('ord_info').innerHTML = `
-      ลูกค้า: ${custName} <br>
-      รูปแบบ: ${o.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับที่ร้าน'} <br>
+      ลูกค้า: ${custName} (โทร: ${custPhone}) <br>
+      รูปแบบ: ${o.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับที่ร้าน'} ${deliveryAddr} <br>
       ${o.pickup_time === '-' ? '' : 'รอบ: ' + o.pickup_time + '<br>'}
-      วิธีชำระเงิน: ${o.payment}
+      วิธีชำระเงิน: ${paymentText}
       ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;">เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
     `;
     
