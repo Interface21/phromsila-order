@@ -707,8 +707,8 @@ let state = {
   function updateAvailableTimes() {
     const timeSelect = document.getElementById('pickupTime');
     const now = new Date();
-    // Add 1 hour buffer
-    now.setHours(now.getHours() + 1);
+    // Add 30 minutes buffer
+    now.setMinutes(now.getMinutes() + 30);
     
     const h = now.getHours();
     const m = now.getMinutes();
