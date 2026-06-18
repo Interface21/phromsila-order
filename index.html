@@ -286,11 +286,14 @@
 
   <!-- ================= CART & CHECKOUT VIEW ================= -->
   <div id="view-checkout" class="view-section" style="padding: 20px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-      <div style="display: flex; align-items: center; margin-bottom: 20px; gap: 15px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 15px;">
         <button class="btn btn-glass" onclick="switchView('view-home')"><i class="fas fa-arrow-left"></i></button>
         <h2 style="margin: 0;">ตะกร้าสินค้า</h2>
       </div>
+      <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9rem; border-radius: 8px; border:none; background:#ef4444; color:white; cursor:pointer;" onclick="clearCart()" id="btnClearCart">
+        <i class="fas fa-trash-alt"></i> ล้างทั้งหมด
+      </button>
     </div>
     
     <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;" id="cartItemsContainer">
@@ -397,8 +400,8 @@
 
 </div>
 
-  <script src="api.js?v=12"></script>
-  <script src="app.js?v=12"></script>
+  <script src="api.js?v=14"></script>
+  <script src="app.js?v=14"></script>
 
 </body>
 </html>

@@ -417,12 +417,16 @@ let state = {
 
   function renderCart() {
     const container = document.getElementById('cartItemsContainer');
+    const btnClearCart = document.getElementById('btnClearCart');
     
     if (state.cart.length === 0) {
+      if (btnClearCart) btnClearCart.style.display = 'none';
       container.innerHTML = '<div style="text-align:center;">ไม่มีสินค้าในตะกร้า</div>';
       calculateTotal();
       return;
     }
+    
+    if (btnClearCart) btnClearCart.style.display = 'block';
     
     let html = '';
     state.cart.forEach((item, index) => {
@@ -502,6 +506,37 @@ let state = {
     // Select first available
     const firstAvail = Array.from(timeSelect.options).find(o => !o.disabled);
     if (firstAvail) timeSelect.value = firstAvail.value;
+  }
+
+  function clearCart() {
+    Swal.fire({
+      title: 'ยืนยันการล้างตะกร้า?',
+      text: "คุณต้องการลบสินค้าทั้งหมดออกจากตะกร้าใช่หรือไม่",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'ล้างตะกร้า',
+      cancelButtonText: 'ยกเลิก',
+      customClass: { popup: 'glass-panel' }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        state.cart = [];
+        renderCart();
+        updateFloatingCart();
+        filterProducts();
+        updateCartBadge();
+        saveCart();
+        Swal.fire({
+          title: 'ล้างตะกร้าแล้ว',
+          icon: 'success',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+    });
   }
 
   function calculateTotal() {
