@@ -145,7 +145,18 @@
       border-radius: 12px;
       padding: 15px;
     }
-    .kanban-column h4 { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid rgba(0,0,0,0.1); }
+    .kanban-column h4 { 
+      margin-bottom: 15px; 
+      padding-bottom: 10px; 
+      border-bottom: 2px solid rgba(0,0,0,0.1); 
+      position: sticky;
+      top: 45px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(5px);
+      z-index: 10;
+      margin-top: -15px;
+      padding-top: 15px;
+    }
   </style>
 </head>
 <body>
@@ -249,8 +260,8 @@
 
   <!-- ORDERS -->
   <div id="view-orders" class="view-section">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h2>จัดการคำสั่งซื้อ</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; position:sticky; top:-30px; background:#f4f7f6; z-index:20; padding: 30px 0 10px 0; margin-top:-30px;">
+      <h2 style="margin: 0;">จัดการคำสั่งซื้อ</h2>
       <div>
         กรองข้อมูล:
         <select id="filterRound" class="input-control" style="width:150px; display:inline-block;" onchange="renderOrders()">
