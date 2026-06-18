@@ -112,11 +112,14 @@ let state = {
   }
   
   function processOrderNotifications(serverOrders) {
-    const localData = JSON.parse(localStorage.getItem('phromsila_notif') || '{"notifications":[], "orderStatuses":{}}');
+    const localData = JSON.parse(localStorage.getItem('phromsila_notif') || '{"notifications":[], "orderStatuses":{}, "orderTotals":{}}');
+    if (!localData.orderTotals) localData.orderTotals = {};
     let hasNew = false;
     
     serverOrders.forEach(o => {
       const oldStatus = localData.orderStatuses[o.id];
+      const oldTotal = localData.orderTotals[o.id];
+      
       if (oldStatus && oldStatus !== o.status) {
         let title = '';
         if (o.status === 'preparing_order') title = 'กำลังจัดเตรียมสินค้า';
@@ -147,7 +150,33 @@ let state = {
           });
         }
       }
+      
+      if (oldTotal && oldTotal !== o.net_total && o.status !== 'shipped' && o.status !== 'cancel' && o.status !== 'completed') {
+        const title = 'อัปเดตยอดเงิน';
+        const body = `ยอดเงินสุทธิของออเดอร์ ${o.order_no} เปลี่ยนแปลงเป็น ฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        localData.notifications.unshift({
+          id: 'notif_' + Date.now() + '_' + Math.random(),
+          order_no: o.order_no,
+          title: title,
+          body: body,
+          date: new Date().toISOString(),
+          read: false
+        });
+        hasNew = true;
+        
+        Swal.fire({
+          title: title,
+          text: body,
+          icon: 'warning',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 4000
+        });
+      }
+      
       localData.orderStatuses[o.id] = o.status;
+      localData.orderTotals[o.id] = o.net_total;
     });
     
     const activeCount = serverOrders.filter(o => o.status !== 'cancel' && o.status !== 'shipped' && o.status !== 'completed').length;

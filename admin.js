@@ -274,6 +274,56 @@ let adminState = {
     }
   }
 
+  window.removeOrderItem = function(orderId, detailId, itemName) {
+    Swal.fire({
+      title: 'ลบรายการสินค้า?',
+      text: `คุณต้องการลบ "${itemName}" ออกจากคำสั่งซื้อใช่หรือไม่? ยอดเงินจะถูกคำนวณใหม่`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'ลบสินค้า',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#ef4444',
+    }).then(result => {
+      if(result.isConfirmed) {
+        Swal.fire({title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        
+        google.script.run.withSuccessHandler(res => {
+           if(res.success) {
+             let msg = 'ลบสินค้าและคำนวณยอดเงินใหม่เรียบร้อย';
+             let type = 'success';
+             if (res.feeChanged) {
+               msg = 'การลบสินค้านี้ทำให้ยอดรวมไม่ถึงเกณฑ์ส่งฟรี ระบบได้คิดค่าจัดส่งเพิ่มแล้ว กรุณาโทรแจ้งยืนยันกับลูกค้า';
+               type = 'warning';
+             }
+             
+             Swal.fire({
+               title: 'สำเร็จ',
+               text: msg,
+               icon: type,
+               confirmButtonText: 'รับทราบ'
+             }).then(() => {
+                // Reload orders
+                google.script.run.withSuccessHandler(res2 => {
+                  if (res2.success) {
+                    adminState.orders = res2.data;
+                    if (document.getElementById('view-orders').classList.contains('active')) {
+                      renderOrders();
+                    }
+                    if (document.getElementById('view-dashboard').classList.contains('active')) {
+                      renderDashboard();
+                    }
+                    openOrderModal(orderId);
+                  }
+                }).getOrders();
+             });
+           } else {
+             showAlert('ข้อผิดพลาด', res.message || 'ไม่สามารถลบสินค้าได้', 'error');
+           }
+        }).removeOrderItem(orderId, detailId);
+      }
+    });
+  }
+
   function getColorForStatus(s) {
     const map = {
       'order': '#4A90E2',
@@ -355,11 +405,15 @@ let adminState = {
       ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;">เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
     `;
     
-    let itemsHtml = '<table class="glass-table"><thead><tr><th>รายการ</th><th>จำนวน</th><th>ราคา</th></tr></thead><tbody>';
+    let itemsHtml = '<table class="glass-table"><thead><tr><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th style="width: 40px;"></th></tr></thead><tbody>';
     o.items.forEach(item => {
       const p = adminState.products.find(prod => prod.id === item.product_id);
       const unit = p ? (p.unit_name || 'ชิ้น') : 'ชิ้น';
-      itemsHtml += `<tr><td>${p ? p.name : 'ไม่ระบุ'}</td><td>${item.quantity} ${unit}</td><td>฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
+      
+      const canDelete = o.status !== 'shipped' && o.status !== 'cancel';
+      const delBtn = canDelete ? `<button class="btn btn-danger" style="padding: 2px 6px; font-size: 0.8rem; border-radius: 4px; box-shadow: none;" onclick="removeOrderItem('${o.id}', '${item.id}', '${p ? p.name : 'สินค้านี้'}')" title="ลบรายการนี้"><i class="fas fa-trash"></i></button>` : '';
+      
+      itemsHtml += `<tr><td>${p ? p.name : 'ไม่ระบุ'}</td><td>${item.quantity} ${unit}</td><td>฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td style="text-align:right;">${delBtn}</td></tr>`;
     });
     itemsHtml += '</tbody></table>';
     

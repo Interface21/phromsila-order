@@ -30,7 +30,8 @@ function doPost(e) {
       'getActiveOrderCount': getActiveOrderCount,
       'getOrders': getOrders,
       'updateOrderStatus': updateOrderStatus,
-      'placeOrder': placeOrder
+      'placeOrder': placeOrder,
+      'removeOrderItem': removeOrderItem
     };
     
     if (handlers[action]) {
@@ -452,3 +453,50 @@ function placeOrder(orderData, cartItems) {
 // fix ref error  
 // fix  
 // fix handlers  
+
+function removeOrderItem(orderId, detailId) {
+  const detailSheet = getSheet('order_detail');
+  const details = getSheetDataAsObjects('order_detail');
+  const detailIndex = details.findIndex(d => d.id === detailId && d.order_id === orderId);
+  if (detailIndex < 0) return { success: false, message: 'Detail not found' };
+  
+  detailSheet.deleteRow(details[detailIndex]._rowIndex);
+  
+  const remainingDetails = details.filter((d, i) => i !== detailIndex && d.order_id === orderId);
+  const newTotal = remainingDetails.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
+  
+  const orderSheet = getSheet('order');
+  const orders = getSheetDataAsObjects('order');
+  const oIndex = orders.findIndex(o => o.id === orderId);
+  if (oIndex >= 0) {
+    const order = orders[oIndex];
+    let deliveryFee = parseFloat(order.delivery_fee || 0);
+    let originalFee = deliveryFee;
+    
+    if (order.pickup_type === 'delivery') {
+       const configRes = getConfig();
+       if (configRes.success) {
+         const config = configRes.data;
+         const threshold = parseFloat(config.free_delivery_threshold) || 200;
+         const charge = parseFloat(config.delivery_charge) || 20;
+         if (newTotal < threshold) {
+           deliveryFee = charge;
+         } else {
+           deliveryFee = 0;
+         }
+       }
+    }
+    
+    const couponDiscount = parseFloat(order.coupon_discount || 0);
+    const netTotal = newTotal + deliveryFee - couponDiscount;
+    
+    const row = order._rowIndex;
+    orderSheet.getRange(row, 9, 1, 4).setValues([[
+      deliveryFee, newTotal, couponDiscount, netTotal
+    ]]);
+    
+    return { success: true, netTotal: netTotal, deliveryFee: deliveryFee, total: newTotal, feeChanged: originalFee === 0 && deliveryFee > 0 };
+  }
+  
+  return { success: false, message: 'Order not found' };
+}
