@@ -582,3 +582,58 @@ function getOrdersByCustomer(customerId) {
   }
   return allOrdersRes;
 }
+
+// --------------------------------------------------
+// Coupons
+// --------------------------------------------------
+function getCustomerCoupons(customerId) {
+  const coupons = getSheetDataAsObjects('customer_coupon');
+  const available = coupons.filter(c => c.customer_id === customerId && String(c.status).toLowerCase() === 'active');
+  return { success: true, data: available };
+}
+
+function redeemCoupon(customerId) {
+  const customerSheet = getSheet('customer');
+  const customers = getSheetDataAsObjects('customer');
+  const custIndex = customers.findIndex(c => c.id === customerId);
+  if (custIndex < 0) return { success: false, message: 'Customer not found' };
+  
+  const customer = customers[custIndex];
+  const accumulate = parseInt(customer.delivery_count_accumulate || 0);
+  const usage = parseInt(customer.delivery_count_usage || 0);
+  const available = accumulate - usage;
+  
+  const configRes = getConfig();
+  if (!configRes.success) return { success: false, message: 'Config not found' };
+  
+  const config = configRes.data;
+  const reqCount = parseInt(config.delivery_count || 10);
+  const discountAmt = parseFloat(config.coupon_discount || 20);
+  
+  if (available < reqCount) {
+    return { success: false, message: 'ยอดสะสมไม่เพียงพอ' };
+  }
+  
+  // Update usage count (Column F is delivery_count_usage)
+  const newUsage = usage + reqCount;
+  const custRow = customer._rowIndex;
+  customerSheet.getRange(custRow, 6).setValue(newUsage);
+  
+  // Issue new coupon
+  const couponSheet = getSheet('customer_coupon');
+  const couponId = getUuid();
+  const dateStr = Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd HH:mm:ss");
+  
+  // Expected Columns: A=id, B=customer_id, C=created_at, D=discount_amount, E=status, F=used_order_id
+  couponSheet.appendRow([
+    couponId,
+    customerId,
+    dateStr,
+    discountAmt,
+    'active',
+    ''
+  ]);
+  
+  return { success: true, message: 'แลกคูปองเรียบร้อยแล้ว' };
+}
+
