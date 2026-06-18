@@ -23,31 +23,7 @@ function doPost(e) {
       'getProducts': getProducts,
       'saveProduct': saveProduct,
       'deleteProduct': deleteProduct,
-function doGet(e) {
-  return ContentService.createTextOutput("API is running. Use POST for data requests.");
-}
 
-function doPost(e) {
-  let result = { success: false, message: 'Invalid request' };
-  
-  try {
-    const payload = JSON.parse(e.postData.contents);
-    const action = payload.action;
-    const args = payload.data || [];
-    
-    // Dispatch map
-    const handlers = {
-      'setupDatabase': setupDatabase,
-      'getScriptUrl': getScriptUrl,
-      'adminLogin': adminLogin,
-      'getConfig': getConfig,
-      'updateConfig': updateConfig,
-      'getCatalogs': getCatalogs,
-      'saveCatalog': saveCatalog,
-      'deleteCatalog': deleteCatalog,
-      'getProducts': getProducts,
-      'saveProduct': saveProduct,
-      'deleteProduct': deleteProduct,
       'getCustomers': getCustomers,
       'saveCustomer': saveCustomer,
       'deleteCustomer': deleteCustomer,
