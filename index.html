@@ -213,30 +213,38 @@
 <div class="app-container">
 
   <!-- ================= LOGIN VIEW ================= -->
-  <div id="view-login" class="view-section glass-panel" style="margin: 20px; padding: 30px; text-align: center; margin-top: 20vh;">
-    <h2 style="margin-bottom: 20px; color: var(--primary);">ยินดีต้อนรับสู่<br><img src="phromsila-logo.png?v=1" style="height: 1.2em; vertical-align: middle; margin-right: 5px;" alt="Logo"> <span id="displayShopNameLogin">Phromsila Shop</span></h2>
-    <div class="input-group">
-      <input type="tel" id="loginPhone" class="input-control" placeholder="เบอร์โทรศัพท์" maxlength="10">
+  <div id="view-login" class="view-section" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9000; background:var(--bg-color); overflow:auto;">
+    <div style="display:flex; justify-content:center; align-items:center; min-height:100vh; padding:20px;">
+      <div class="glass-panel" style="width:100%; max-width:400px; padding:40px; text-align:center;">
+        <h2 style="margin-bottom: 20px; color: var(--primary);">ยินดีต้อนรับสู่<br><img src="phromsila-logo.png?v=1" style="height: 1.2em; vertical-align: middle; margin-right: 5px;" alt="Logo"> <span id="displayShopNameLogin">Phromsila Shop</span></h2>
+        <div class="input-group">
+          <input type="tel" id="loginPhone" class="input-control" placeholder="เบอร์โทรศัพท์" maxlength="10">
+        </div>
+        <button class="btn btn-primary w-100" onclick="handleLogin()">เข้าสู่ระบบ</button>
+      </div>
     </div>
-    <button class="btn btn-primary w-100" onclick="handleLogin()">เข้าสู่ระบบ</button>
   </div>
 
   <!-- ================= REGISTER VIEW ================= -->
-  <div id="view-register" class="view-section glass-panel" style="margin: 20px; padding: 30px;">
-    <h3 style="margin-bottom: 20px; text-align: center;">ลงทะเบียนลูกค้าใหม่</h3>
-    <div class="input-group">
-      <label>ชื่อ - นามสกุล</label>
-      <input type="text" id="regName" class="input-control" placeholder="ชื่อของคุณ">
+  <div id="view-register" class="view-section" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9000; background:var(--bg-color); overflow:auto;">
+    <div style="display:flex; justify-content:center; align-items:center; min-height:100vh; padding:20px;">
+      <div class="glass-panel" style="width:100%; max-width:400px; padding:30px;">
+        <h3 style="margin-bottom: 20px; text-align: center;">ลงทะเบียนลูกค้าใหม่</h3>
+        <div class="input-group">
+          <label>ชื่อ - นามสกุล</label>
+          <input type="text" id="regName" class="input-control" placeholder="ชื่อของคุณ">
+        </div>
+        <div class="input-group">
+          <label>เบอร์โทรศัพท์</label>
+          <input type="tel" id="regPhone" class="input-control" readonly>
+        </div>
+        <div class="input-group">
+          <label>ที่อยู่สำหรับจัดส่ง</label>
+          <textarea id="regAddress" class="input-control" rows="3" placeholder="รายละเอียดที่อยู่จัดส่ง"></textarea>
+        </div>
+        <button class="btn btn-primary w-100" onclick="handleRegister()">บันทึก</button>
+      </div>
     </div>
-    <div class="input-group">
-      <label>เบอร์โทรศัพท์</label>
-      <input type="tel" id="regPhone" class="input-control" readonly>
-    </div>
-    <div class="input-group">
-      <label>ที่อยู่สำหรับจัดส่ง</label>
-      <textarea id="regAddress" class="input-control" rows="3" placeholder="รายละเอียดที่อยู่จัดส่ง"></textarea>
-    </div>
-    <button class="btn btn-primary w-100" onclick="handleRegister()">บันทึก</button>
   </div>
 
   <!-- ================= HOME VIEW ================= -->
@@ -664,7 +672,7 @@
 </div>
 
   <script src="api.js?v=23"></script>
-  <script src="app.js?v=25"></script>
+  <script src="app.js?v=26"></script>
 
 </body>
 </html>
