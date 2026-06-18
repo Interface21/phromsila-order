@@ -411,14 +411,32 @@ let adminState = {
       const unit = p ? (p.unit_name || 'ชิ้น') : 'ชิ้น';
       
       const canDelete = o.status !== 'shipped' && o.status !== 'cancel';
-      const delBtn = canDelete ? `<button class="btn btn-danger" style="padding: 2px 6px; font-size: 0.8rem; border-radius: 4px; box-shadow: none;" onclick="removeOrderItem('${o.id}', '${item.id}', '${p ? p.name : 'สินค้านี้'}')" title="ลบรายการนี้"><i class="fas fa-trash"></i></button>` : '';
+      const delBtn = canDelete ? `<button style="background: transparent; padding: 4px 8px; font-size: 0.9rem; border-radius: 6px; border: none; cursor: pointer; color: #94a3b8; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'; this.style.background='#fee2e2';" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent';" onclick="removeOrderItem('${o.id}', '${item.id}', '${p ? p.name : 'สินค้านี้'}')" title="ลบรายการนี้"><i class="fas fa-trash-alt"></i></button>` : '';
       
       itemsHtml += `<tr><td>${p ? p.name : 'ไม่ระบุ'}</td><td>${item.quantity} ${unit}</td><td>฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td><td style="text-align:right;">${delBtn}</td></tr>`;
     });
     itemsHtml += '</tbody></table>';
     
     document.getElementById('ord_items').innerHTML = itemsHtml;
-    document.getElementById('ord_total').textContent = `ยอดสุทธิ: ฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    
+    let summaryHtml = `
+      <div style="font-size: 0.95rem; color: var(--text-light); text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+        <div style="display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 8px; width: 250px;">
+          <span>รวมค่าสินค้า:</span>
+          <span style="width: 90px; text-align: right;">฿${parseFloat(o.total || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 8px; width: 250px;">
+          <span>ค่าจัดส่ง:</span>
+          <span style="width: 90px; text-align: right;">${parseFloat(o.delivery_fee || 0) > 0 ? '฿' + parseFloat(o.delivery_fee).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '<span style="color:#10b981;">ส่งฟรี!</span>'}</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 5px; color: var(--primary); font-weight: bold; font-size: 1.15rem; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px; width: 250px;">
+          <span>ยอดสุทธิ:</span>
+          <span style="width: 90px; text-align: right;">฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('ord_total').innerHTML = summaryHtml;
     
     // Reset all buttons to gray
     const statuses = ['order', 'preparing_order', 'preparing_shipment', 'shipped', 'cancel'];
