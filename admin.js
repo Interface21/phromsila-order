@@ -78,13 +78,17 @@ let adminState = {
       renderOrders();
       document.getElementById('newOrderBadge').classList.add('d-none');
     }
+    if (view === 'coupons') renderCoupons();
+    if (view === 'customers') renderCustomers();
+    if (view === 'products') renderProducts();
+    if (view === 'catalogs') renderCatalogs();
   }
 
   function loadAllData() {
     google.script.run.withSuccessHandler(res => { if(res.success) { adminState.config = res.data; populateConfig(); } }).getConfig();
     google.script.run.withSuccessHandler(res => { if(res.success) { adminState.catalogs = res.data; renderCatalogs(); } }).getCatalogs();
     google.script.run.withSuccessHandler(res => { if(res.success) { adminState.products = res.data; renderProducts(); } }).getProducts();
-    google.script.run.withSuccessHandler(res => { if(res.success) { adminState.customers = res.data; renderCustomers(); } }).getCustomers();
+    google.script.run.withSuccessHandler(res => { if(res.success) { adminState.customers = res.data; renderCustomers(); renderCoupons(); } }).getCustomers();
     fetchOrders(true); // initial fetch
   }
 
@@ -953,7 +957,7 @@ let adminState = {
     const startIndex = (adminState.couponPage - 1) * limit;
     const displayed = filteredCustomers.slice(startIndex, startIndex + limit);
     
-    const reqCount = parseInt(adminState.config.delivery_count || 10);
+    const reqCount = adminState.config ? parseInt(adminState.config.delivery_count || 10) : 10;
     
     displayed.forEach(c => {
       const accumulate = parseInt(c.delivery_count_accumulate || 0);
