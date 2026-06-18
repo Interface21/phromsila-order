@@ -128,7 +128,7 @@ let adminState = {
     document.getElementById('dashOrders').textContent = validOrders.length.toLocaleString('en-US');
     
     const pendingStatuses = ['order', 'preparing_order', 'preparing_shipment'];
-    const pendingOrders = todayOrders.filter(o => pendingStatuses.includes(o.status)).length;
+    const pendingOrders = adminState.orders.filter(o => pendingStatuses.includes(o.status)).length;
     const completedOrders = todayOrders.filter(o => o.status === 'shipped').length;
     document.getElementById('dashPending').textContent = pendingOrders.toLocaleString('en-US');
     document.getElementById('dashCompleted').textContent = completedOrders.toLocaleString('en-US');
@@ -157,6 +157,14 @@ let adminState = {
     if (ordersChartInst) ordersChartInst.destroy();
     if (pickupChartInst) pickupChartInst.destroy();
 
+    const wSales = document.getElementById('salesChartWrapper');
+    if (wSales) wSales.innerHTML = '<canvas id="salesTrendChart"></canvas>';
+    
+    const wOrders = document.getElementById('ordersChartWrapper');
+    if (wOrders) wOrders.innerHTML = '<canvas id="ordersTrendChart"></canvas>';
+    
+    const wPickup = document.getElementById('pickupChartWrapper');
+    if (wPickup) wPickup.innerHTML = '<canvas id="pickupRatioChart"></canvas>';
     const ctxSales = document.getElementById('salesTrendChart');
     if (ctxSales) {
       salesChartInst = new Chart(ctxSales.getContext('2d'), {
