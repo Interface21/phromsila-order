@@ -183,10 +183,14 @@ let adminState = {
     const filter = document.getElementById('filterRound').value;
     
     let filteredOrders = adminState.orders;
-    // only show today's orders by default? Or all active?
-    // Let's show all active or today.
     const today = new Date().toLocaleDateString('en-GB');
-    filteredOrders = filteredOrders.filter(o => new Date(o.date_time).toLocaleDateString('en-GB') === today);
+    
+    filteredOrders = filteredOrders.filter(o => {
+      const oDate = new Date(o.date_time).toLocaleDateString('en-GB');
+      if (oDate === today) return true;
+      if (o.status !== 'shipped' && o.status !== 'cancel') return true;
+      return false;
+    });
     
     if (filter !== 'all') {
       filteredOrders = filteredOrders.filter(o => o.pickup_time === filter);
@@ -200,11 +204,19 @@ let adminState = {
       const items = filteredOrders.filter(o => o.status === c);
       items.forEach(o => {
         const div = document.createElement('div');
+        const oDate = new Date(o.date_time).toLocaleDateString('en-GB');
+        const isPast = oDate !== today;
+        
         div.className = 'order-card glass';
+        if (isPast) {
+          div.style.backgroundColor = '#fff1f2';
+          div.style.border = '1px solid #fecdd3';
+        }
+        
         div.innerHTML = `
           <div style="font-weight:bold;">${o.order_no}</div>
           <div style="font-size:0.8rem; color:var(--text-light); margin:5px 0;">
-            ${new Date(o.date_time).toLocaleTimeString('th-TH')} | ${o.pickup_time || '-'}
+            ${isPast ? oDate + ' ' : ''}${new Date(o.date_time).toLocaleTimeString('th-TH')} | ${o.pickup_time || '-'}
           </div>
           <div>ยอด: ฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
         `;
