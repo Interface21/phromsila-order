@@ -751,6 +751,7 @@ let state = {
         filterProducts();
         updateCartBadge();
         saveCart();
+        switchView('view-home');
         Swal.fire({
           title: 'ล้างตะกร้าแล้ว',
           icon: 'success',
