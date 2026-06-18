@@ -566,7 +566,7 @@ let state = {
        catSelect.innerHTML = catHtml;
     }
     
-    state.productLimit = 5;
+    state.productLimit = 10;
     filterProducts();
   }
 
@@ -593,7 +593,7 @@ let state = {
 
   function setCategory(catId) {
     state.currentCategory = catId;
-    state.productLimit = 5;
+    state.productLimit = 10;
     renderHome(); // Re-render to update active tab
   }
 
@@ -696,7 +696,7 @@ let state = {
   }
 
   function loadMoreProducts() {
-    state.productLimit = (state.productLimit || 5) + 5;
+    state.productLimit = (state.productLimit || 10) + 10;
     filterProducts();
   }
 
