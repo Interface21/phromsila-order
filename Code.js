@@ -86,6 +86,16 @@ function getUuid() {
   return Utilities.getUuid();
 }
 
+function findRowIndex(sheet, id, colIndex) {
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][colIndex] === id) {
+      return i + 1;
+    }
+  }
+  return -1;
+}
+
 function getSheetDataAsObjects(sheetName) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sheet) return [];
@@ -119,7 +129,7 @@ function getSheetDataAsObjects(sheetName) {
 
 function softDeleteRow(sheet, rowIndex) {
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const colIndex = headers.indexOf('soft_delete');
+  const colIndex = headers.findIndex(h => String(h).trim().toLowerCase() === 'soft_delete');
   if (colIndex > -1) {
     sheet.getRange(rowIndex, colIndex + 1).setValue(true);
   }
