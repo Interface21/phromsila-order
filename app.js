@@ -997,7 +997,7 @@ let state = {
       const threshold = parseFloat(state.config.free_delivery_threshold) || 200;
       const charge = parseFloat(state.config.delivery_charge) || 20;
       
-      if (subtotal < threshold) {
+      if (trueSubtotal < threshold) {
         deliveryFee = charge;
         document.getElementById('deliveryFeeCondition').textContent = `(สั่งไม่ถึง ฿${threshold})`;
       } else {
