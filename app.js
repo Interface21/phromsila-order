@@ -55,6 +55,7 @@ let state = {
       
       // Load active order count badge
       google.script.run.withSuccessHandler(res => {
+        if (!state.customer) return;
         if (!res.success) return;
         const count = res.data;
         const btn = document.getElementById('btnMyOrders');
