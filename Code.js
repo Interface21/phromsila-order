@@ -37,7 +37,8 @@ function doPost(e) {
       'getCustomerCoupons': getCustomerCoupons,
       'redeemCoupon': redeemCoupon,
       'uploadFileToDrive': uploadFileToDrive,
-      'resetDatabase': resetDatabase
+      'resetDatabase': resetDatabase,
+      'testDiscord': testDiscord
     };
     
     if (handlers[action]) {
@@ -229,6 +230,7 @@ function notifyDiscord(message) {
 
 function testDiscord() {
   notifyDiscord("Test from API!");
+  return { success: true, message: "Discord notification triggered" };
 }
 
 // --------------------------------------------------
@@ -579,6 +581,7 @@ function placeOrder(orderData, cartItems) {
       custSheet.getRange(cRow, 5).setValue(currentAcc + 1);
     }
   }
+  notifyDiscord(`🛎️ มีคำสั่งซื้อใหม่: #${orderNo}\nลูกค้ารับสินค้าแบบ: ${orderData.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับเองที่ร้าน'}\nยอดรวม: ฿${orderData.total_amount}`);
   
   return { success: true, orderNo: orderNo };
 }
