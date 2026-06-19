@@ -217,7 +217,10 @@
       <label>ที่อยู่สำหรับจัดส่ง</label>
       <textarea id="regAddress" class="input-control" rows="3" placeholder="รายละเอียดที่อยู่จัดส่ง"></textarea>
     </div>
-    <button class="btn btn-primary w-100" onclick="handleRegister()">บันทึก</button>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-secondary w-100" onclick="switchView('view-home')" style="background-color: #6c757d;">ยกเลิก</button>
+      <button class="btn btn-primary w-100" onclick="handleRegister()">บันทึก</button>
+    </div>
   </div>
 
   <!-- ================= HOME VIEW ================= -->
