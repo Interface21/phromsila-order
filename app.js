@@ -491,7 +491,7 @@ let state = {
     const phone = document.getElementById('regPhone').value.trim();
     const address = document.getElementById('regAddress').value.trim();
     
-    if (!name || !address) return showAlert('ข้อผิดพลาด', 'กรุณาระบุชื่อและที่อยู่', 'error');
+    if (!name || !phone || !address) return showAlert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วน (ชื่อ, เบอร์โทรศัพท์, ที่อยู่)', 'error');
     
     Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
