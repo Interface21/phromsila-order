@@ -29,7 +29,7 @@ let adminState = {
       btn.disabled = true;
     }
     
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     const hash = await sha256(pwd);
     
     google.script.run.withFailureHandler(e => {
@@ -587,7 +587,7 @@ let adminState = {
   }
 
   function executeChangeStatus(newStatus, reason) {
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -671,7 +671,7 @@ let adminState = {
       name: document.getElementById('cat_name').value,
       active: document.getElementById('cat_active').checked
     };
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -683,7 +683,7 @@ let adminState = {
 
   function deleteCatalog(id) {
     if(!confirm('คุณแน่ใจหรือไม่ที่จะลบรายการนี้?')) return;
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -809,7 +809,7 @@ let adminState = {
       const file = fileInput.files[0];
       const reader = new FileReader();
       reader.onloadend = function() {
-        Swal.showLoading();
+        Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
         google.script.run.withSuccessHandler(res => {
           if(res && res.error) { Swal.fire('ข้อผิดพลาด', res.error || 'อัปโหลดรูปภาพไม่สำเร็จ', 'error'); return; }
           document.getElementById('prod_image_url').value = res.data || res;
@@ -836,7 +836,7 @@ let adminState = {
       sku_code: '',
       unit_name: 'ชิ้น'
     };
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -848,7 +848,7 @@ let adminState = {
 
   function deleteProduct(id) {
     if(!confirm('คุณแน่ใจหรือไม่ที่จะลบสินค้านี้?')) return;
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -933,7 +933,7 @@ let adminState = {
       data.delivery_count_usage = c.delivery_count_usage || 0;
     }
 
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -1014,7 +1014,7 @@ let adminState = {
       cancelButtonText: 'ยกเลิก'
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.showLoading();
+        Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
         google.script.run.withFailureHandler(e => {
           Swal.close();
           Swal.fire('Error', e.message || e.toString(), 'error');
@@ -1083,7 +1083,7 @@ let adminState = {
       pwd: adminState.config.pwd
     };
     
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       if(res.success) {
         Swal.fire('สำเร็จ', 'บันทึกการตั้งค่าเรียบร้อยแล้ว', 'success');

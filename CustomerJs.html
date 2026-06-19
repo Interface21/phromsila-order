@@ -83,7 +83,7 @@
     const phone = document.getElementById('loginPhone').value.trim();
     if (phone.length < 9) return showAlert('ข้อผิดพลาด', 'กรุณาระบุเบอร์โทรศัพท์ให้ถูกต้อง', 'error');
     
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if (res.success) {
@@ -106,7 +106,7 @@
     
     if (!name || !address) return showAlert('ข้อผิดพลาด', 'กรุณาระบุชื่อและที่อยู่', 'error');
     
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if (res.success) {
@@ -130,7 +130,7 @@
   }
 
   function goToAdmin() {
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(url => {
       window.top.location.href = url + '?page=admin';
     }).getScriptUrl();
@@ -690,7 +690,7 @@
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          Swal.showLoading();
+          Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
           google.script.run.withSuccessHandler(res => {
             Swal.close();
             if(res.success) {

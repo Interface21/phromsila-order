@@ -25,7 +25,7 @@
     if (!pwd) return;
     
     errEl.classList.add('d-none');
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     const hash = await sha256(pwd);
     
     google.script.run.withSuccessHandler(res => {
@@ -45,7 +45,7 @@
   }
 
   function goToShop() {
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(url => {
       window.top.location.href = url + '?page=customer';
     }).getScriptUrl();
@@ -321,7 +321,7 @@
   }
 
   function executeChangeStatus(newStatus, reason) {
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -405,7 +405,7 @@
       name: document.getElementById('cat_name').value,
       active: document.getElementById('cat_active').checked
     };
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -417,7 +417,7 @@
 
   function deleteCatalog(id) {
     if(!confirm('คุณแน่ใจหรือไม่ที่จะลบรายการนี้?')) return;
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -545,7 +545,7 @@
       const file = fileInput.files[0];
       const reader = new FileReader();
       reader.onloadend = function() {
-        Swal.showLoading();
+        Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
         google.script.run.withSuccessHandler(url => {
           if(url.error) { Swal.fire('ข้อผิดพลาด', 'อัปโหลดรูปภาพไม่สำเร็จ', 'error'); return; }
           document.getElementById('prod_image_url').value = url;
@@ -572,7 +572,7 @@
       sku_code: '',
       unit_name: 'ชิ้น'
     };
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -584,7 +584,7 @@
 
   function deleteProduct(id) {
     if(!confirm('คุณแน่ใจหรือไม่ที่จะลบสินค้านี้?')) return;
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -669,7 +669,7 @@
       data.delivery_count_usage = c.delivery_count_usage || 0;
     }
 
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if(res.success) {
@@ -731,7 +731,7 @@
       coupon_discount: adminState.config.coupon_discount
     };
     
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       if(res.success) {
         Swal.fire('สำเร็จ', 'บันทึกการตั้งค่าเรียบร้อยแล้ว', 'success');

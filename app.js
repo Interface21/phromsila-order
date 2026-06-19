@@ -389,7 +389,7 @@ let state = {
 
   function redeemCouponCustomer() {
     if (!state.customer) return;
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withFailureHandler(e => {
       showAlert('Error', e.message || e.toString(), 'error');
     }).withSuccessHandler(res => {
@@ -441,7 +441,7 @@ let state = {
       btn.disabled = true;
     }
     
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withFailureHandler(e => {
       if (btn) {
         btn.innerHTML = originalText;
@@ -475,7 +475,7 @@ let state = {
     
     if (!name || !address) return showAlert('ข้อผิดพลาด', 'กรุณาระบุชื่อและที่อยู่', 'error');
     
-    Swal.showLoading();
+    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
       Swal.close();
       if (res.success) {
@@ -1279,7 +1279,7 @@ let state = {
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          Swal.showLoading();
+          Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
           google.script.run.withSuccessHandler(res => {
             if(res.success) {
               Swal.close();
