@@ -446,19 +446,31 @@
       const cat = adminState.catalogs.find(c => c.id === p.catalog_id);
       const unit = p.unit_name || 'ชิ้น';
       const imgHtml = p.image ? `<img src="${p.image}" width="40" height="40" style="border-radius:8px; object-fit:cover;">` : `<div style="width:40px; height:40px; border-radius:8px; background:#ddd; display:flex; align-items:center; justify-content:center; color:#888;"><i class="fas fa-image"></i></div>`;
+      
+      let priceHtml = `฿${parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}/${unit}`;
+      if (p.promo_price > 0) {
+        priceHtml += ` <span style="background:#ef4444; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem; margin-left:5px;">โปร: ฿${parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}</span>`;
+      }
+      
+      let statusHtml = '';
+      if (p.active) {
+        statusHtml += `<span style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; margin-right:5px; white-space:nowrap;">เปิดแสดง</span>`;
+      } else {
+        statusHtml += `<span style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; margin-right:5px; white-space:nowrap;">ปิดแสดง</span>`;
+      }
+      
+      const viewPrice = p.view_price !== false && String(p.view_price).toUpperCase() !== 'FALSE';
+      if (!viewPrice) {
+        statusHtml += `<span style="background:#f59e0b; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">ปิดราคา</span>`;
+      }
+      
       tbody.innerHTML += `
         <tr>
           <td>${imgHtml}</td>
           <td>${p.name}</td>
           <td>${cat ? cat.name : '-'}</td>
-          <td>฿${parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}/${unit}</td>
-          <td>${p.promo_price > 0 ? '฿'+parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})+'/'+unit : '-'}</td>
-          <td>
-            <label class="switch">
-              <input type="checkbox" ${p.active ? 'checked' : ''} onchange="toggleProductActive('${p.id}', this)">
-              <span class="slider"></span>
-            </label>
-          </td>
+          <td>${priceHtml}</td>
+          <td>${statusHtml}</td>
           <td>
             <button class="btn btn-glass" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
             <button class="btn btn-danger" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
@@ -492,6 +504,8 @@
     document.getElementById('prod_image_url').value = '';
     if (document.getElementById('prod_image_file')) document.getElementById('prod_image_file').value = '';
     document.getElementById('img_preview').innerHTML = '';
+    document.getElementById('prod_active').checked = true;
+    document.getElementById('prod_hide_price').checked = false;
     document.getElementById('modal-product').classList.add('active');
   }
 
@@ -512,6 +526,8 @@
       }
     }
     document.getElementById('prod_active').checked = p.active;
+    const viewPrice = p.view_price !== false && String(p.view_price).toUpperCase() !== 'FALSE';
+    document.getElementById('prod_hide_price').checked = !viewPrice;
     document.getElementById('prod_image_url').value = p.image;
     document.getElementById('img_preview').innerHTML = `<img src="${p.image}" width="100" style="border-radius:8px;">`;
     document.getElementById('modal-product').classList.add('active');
@@ -547,6 +563,7 @@
       promo_expire: document.getElementById('prod_promo_expire').value || '',
       image: document.getElementById('prod_image_url').value,
       active: document.getElementById('prod_active').checked,
+      view_price: !document.getElementById('prod_hide_price').checked,
       sku_code: '',
       unit_name: 'ชิ้น'
     };

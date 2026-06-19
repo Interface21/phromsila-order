@@ -165,6 +165,9 @@
 
   /* Helpers */
   .d-none { display: none !important; }
+  
+  /* Force hide floating cart on checkout view */
+  #view-checkout.active ~ #floatingCart { display: none !important; }
   .text-center { text-align: center; }
   .text-right { text-align: right; }
   .mt-1 { margin-top: 0.5rem; }
