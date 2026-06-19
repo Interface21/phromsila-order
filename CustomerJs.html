@@ -141,6 +141,7 @@
     google.script.run.withFailureHandler(e => showAlert('Error in getConfig', e.message, 'error')).withSuccessHandler(res => {
       if (res.success) {
         state.config = res.data;
+        updateAuthUI(); // Refresh UI after config is loaded
         
         // Populate Header Info
         document.getElementById('displayShopName').textContent = state.config.shop_name || 'Phromsila Shop';

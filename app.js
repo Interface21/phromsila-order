@@ -37,7 +37,15 @@ let state = {
       document.getElementById('btnMyOrders').classList.remove('d-none');
       
       const btnRewards = document.getElementById('btnMyRewards');
-      if (btnRewards) btnRewards.classList.remove('d-none');
+      if (btnRewards) {
+        const reqCount = state.config ? parseInt(state.config.delivery_count || 10) : 10;
+        const couponValue = state.config ? parseInt(state.config.coupon_discount || 20) : 20;
+        if (reqCount > 0 && couponValue > 0) {
+          btnRewards.classList.remove('d-none');
+        } else {
+          btnRewards.classList.add('d-none');
+        }
+      }
       
       document.getElementById('btnLogout').classList.remove('d-none');
       document.getElementById('btnLogin').classList.add('d-none');
@@ -517,6 +525,7 @@ let state = {
     google.script.run.withFailureHandler(e => showAlert('Error in getConfig', e.message, 'error')).withSuccessHandler(res => {
       if (res.success) {
         state.config = res.data;
+        updateAuthUI(); // Refresh UI after config is loaded
         
         // Populate Header Info
         const shopName = state.config.shop_name || 'Phromsila Shop';
