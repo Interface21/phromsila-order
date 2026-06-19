@@ -656,7 +656,7 @@
       let itemsHtml = '';
       o.items.forEach(item => {
         const p = state.products.find(prod => prod.id === item.product_id);
-        const name = p ? p.name : 'ไม่ระบุ';
+        const name = p ? p.name : '(สินค้านี้ถูกลบแล้ว)';
         itemsHtml += `<div style="font-size:0.9rem; color:var(--text-light);">${item.quantity} x ${name}</div>`;
       });
       

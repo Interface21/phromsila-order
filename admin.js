@@ -480,9 +480,9 @@ let adminState = {
       const unit = p ? (p.unit_name || 'ชิ้น') : 'ชิ้น';
       
       const canDelete = o.status !== 'shipped' && o.status !== 'cancel';
-      const delBtn = canDelete ? `<button style="background: transparent; padding: 4px 8px; font-size: 0.9rem; border-radius: 6px; border: none; cursor: pointer; color: #94a3b8; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'; this.style.background='#fee2e2';" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent';" onclick="removeOrderItem('${o.id}', '${item.id}', '${p ? p.name : 'สินค้านี้'}')" title="ลบรายการนี้"><i class="fas fa-trash-alt"></i></button>` : '';
+      const delBtn = canDelete ? `<button style="background: transparent; padding: 4px 8px; font-size: 0.9rem; border-radius: 6px; border: none; cursor: pointer; color: #94a3b8; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'; this.style.background='#fee2e2';" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent';" onclick="removeOrderItem('${o.id}', '${item.id}', '${p ? p.name : '(สินค้านี้ถูกลบแล้ว)'}')" title="ลบรายการนี้"><i class="fas fa-trash-alt"></i></button>` : '';
       
-      itemsHtml += `<tr><td style="text-align:center;">${delBtn}</td><td>${p ? p.name : 'ไม่ระบุ'}</td><td>${item.quantity} ${unit}</td><td style="text-align:right;">฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
+      itemsHtml += `<tr><td style="text-align:center;">${delBtn}</td><td>${p ? p.name : '(สินค้านี้ถูกลบแล้ว)'}</td><td>${item.quantity} ${unit}</td><td style="text-align:right;">฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
     });
     itemsHtml += '</tbody></table>';
     

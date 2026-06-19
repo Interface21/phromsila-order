@@ -100,16 +100,29 @@ function getSheetDataAsObjects(sheetName) {
     for (let j = 0; j < headers.length; j++) {
       let val = row[j];
       if (val instanceof Date) {
-        // Convert to local ISO string equivalent, ignoring timezone offset to keep exact date/time
         val = new Date(val.getTime() - (val.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
       }
       obj[String(headers[j]).trim()] = val;
     }
+    
+    // Filter out soft deleted rows
+    if (obj['soft_delete'] === true || String(obj['soft_delete']).toLowerCase() === 'true') {
+      continue;
+    }
+    
     // Add row index for updating later
     obj._rowIndex = i + 1;
     rows.push(obj);
   }
   return rows;
+}
+
+function softDeleteRow(sheet, rowIndex) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const colIndex = headers.indexOf('soft_delete');
+  if (colIndex > -1) {
+    sheet.getRange(rowIndex, colIndex + 1).setValue(true);
+  }
 }
 
 // --------------------------------------------------
@@ -280,7 +293,7 @@ function deleteCatalog(id) {
   const sheet = getSheet('product_catalog');
   const rowIndex = findRowIndex(sheet, id, 0);
   if (rowIndex > -1) {
-    sheet.deleteRow(rowIndex);
+    softDeleteRow(sheet, rowIndex);
     notifyDiscord("🗑️ แอดมินลบหมวดหมู่ ID: " + id);
     return { success: true };
   }
@@ -334,7 +347,7 @@ function deleteProduct(id) {
   const sheet = getSheet('product');
   const rowIndex = findRowIndex(sheet, id, 0);
   if (rowIndex > -1) {
-    sheet.deleteRow(rowIndex);
+    softDeleteRow(sheet, rowIndex);
     notifyDiscord("🗑️ แอดมินลบสินค้า ID: " + id);
     return { success: true };
   }
@@ -373,7 +386,7 @@ function deleteCustomer(id) {
   const sheet = getSheet('customer');
   const rowIndex = findRowIndex(sheet, id, 0);
   if (rowIndex > -1) {
-    sheet.deleteRow(rowIndex);
+    softDeleteRow(sheet, rowIndex);
     notifyDiscord("🗑️ แอดมินลบข้อมูลลูกค้า ID: " + id);
     return { success: true };
   }
@@ -566,7 +579,7 @@ function removeOrderItem(orderId, detailId) {
   const detailIndex = details.findIndex(d => d.id === detailId && d.order_id === orderId);
   if (detailIndex < 0) return { success: false, message: 'Detail not found' };
   
-  detailSheet.deleteRow(details[detailIndex]._rowIndex);
+  softDeleteRow(detailSheet, details[detailIndex]._rowIndex);
   
   const remainingDetails = details.filter((d, i) => i !== detailIndex && d.order_id === orderId);
   const newTotal = remainingDetails.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);

@@ -246,7 +246,7 @@
     o.items.forEach(item => {
       const p = adminState.products.find(prod => prod.id === item.product_id);
       const unit = p ? (p.unit_name || 'ชิ้น') : 'ชิ้น';
-      itemsHtml += `<tr><td>${p ? p.name : 'ไม่ระบุ'}</td><td>${item.quantity} ${unit}</td><td>฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
+      itemsHtml += `<tr><td>${p ? p.name : '(สินค้านี้ถูกลบแล้ว)'}</td><td>${item.quantity} ${unit}</td><td>฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
     });
     itemsHtml += '</tbody></table>';
     

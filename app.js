@@ -1224,7 +1224,7 @@ let state = {
         let itemsHtml = '';
         o.items.forEach(item => {
           const p = state.products.find(prod => prod.id === item.product_id);
-          const name = p ? p.name : 'ไม่ระบุ';
+          const name = p ? p.name : '(สินค้านี้ถูกลบแล้ว)';
           let itemStr = `${item.quantity} x ${name}`;
           if (p && (p.view_price === false || String(p.view_price).toUpperCase() === 'FALSE')) {
             hasHiddenPrice = true;
