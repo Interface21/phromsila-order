@@ -347,10 +347,7 @@
         <tr>
           <td>${c.name}</td>
           <td>
-            <label class="switch">
-              <input type="checkbox" ${c.active ? 'checked' : ''} onchange="toggleCatalogActive('${c.id}', this)">
-              <span class="slider"></span>
-            </label>
+            ${c.active ? '<span style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">เปิดใช้งาน</span>' : '<span style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">ปิดใช้งาน</span>'}
           </td>
           <td>
             <button class="btn btn-glass" onclick="editCatalog('${c.id}')"><i class="fas fa-edit"></i></button>
@@ -454,7 +451,16 @@
       
       let priceHtml = `฿${parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}/${unit}`;
       if (p.promo_price > 0) {
-        priceHtml += ` <span style="background:#ef4444; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem; margin-left:5px;">โปร: ฿${parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}</span>`;
+        let isExpired = false;
+        if (p.promo_expire) {
+          const expireDate = new Date(p.promo_expire);
+          expireDate.setHours(23, 59, 59, 999);
+          if (new Date() > expireDate) {
+            isExpired = true;
+          }
+        }
+        let badgeBg = isExpired ? '#9ca3af' : '#ef4444';
+        priceHtml += ` <span style="background:${badgeBg}; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem; margin-left:5px;">โปร: ฿${parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}</span>`;
       }
       
       let statusHtml = '';
@@ -620,10 +626,7 @@
           <td>${c.mobile_no}</td>
           <td>${c.delivery_address || '-'}</td>
           <td>
-            <label class="switch">
-              <input type="checkbox" ${c.active ? 'checked' : ''} onchange="toggleCustomerActive('${c.id}', this)">
-              <span class="slider"></span>
-            </label>
+            ${c.active ? '<span style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">เปิดใช้งาน</span>' : '<span style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">ระงับการใช้งาน</span>'}
           </td>
           <td>
             <button class="btn btn-glass" onclick="editCustomer('${c.id}')"><i class="fas fa-edit"></i></button>

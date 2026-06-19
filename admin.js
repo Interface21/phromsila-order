@@ -613,10 +613,7 @@ let adminState = {
         <tr>
           <td>${c.name}</td>
           <td>
-            <label class="switch">
-              <input type="checkbox" ${c.active ? 'checked' : ''} onchange="toggleCatalogActive('${c.id}', this)">
-              <span class="slider"></span>
-            </label>
+            ${c.active ? '<span style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">เปิดใช้งาน</span>' : '<span style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">ปิดใช้งาน</span>'}
           </td>
           <td>
             <button class="btn btn-glass" onclick="editCatalog('${c.id}')"><i class="fas fa-edit"></i></button>
@@ -719,7 +716,16 @@ let adminState = {
       const imgHtml = p.image ? `<img src="${p.image}" width="40" height="40" style="border-radius:8px; object-fit:cover;">` : `<div style="width:40px; height:40px; border-radius:8px; background:#ddd; display:flex; align-items:center; justify-content:center; color:#888;"><i class="fas fa-image"></i></div>`;
       let priceHtml = `฿${parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}/${unit}`;
       if (p.promo_price > 0) {
-        priceHtml += ` <span style="background:#ef4444; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem; margin-left:5px;">โปร: ฿${parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}</span>`;
+        let isExpired = false;
+        if (p.promo_expire) {
+          const expireDate = new Date(p.promo_expire);
+          expireDate.setHours(23, 59, 59, 999);
+          if (new Date() > expireDate) {
+            isExpired = true;
+          }
+        }
+        let badgeBg = isExpired ? '#9ca3af' : '#ef4444';
+        priceHtml += ` <span style="background:${badgeBg}; color:white; padding:2px 6px; border-radius:4px; font-size:0.8rem; margin-left:5px;">โปร: ฿${parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}</span>`;
       }
       
       let statusHtml = '';
@@ -884,10 +890,7 @@ let adminState = {
           <td>${c.mobile_no}</td>
           <td>${c.delivery_address || '-'}</td>
           <td>
-            <label class="switch">
-              <input type="checkbox" ${c.active ? 'checked' : ''} onchange="toggleCustomerActive('${c.id}', this)">
-              <span class="slider"></span>
-            </label>
+            ${c.active ? '<span style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">เปิดใช้งาน</span>' : '<span style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem; white-space:nowrap;">ระงับการใช้งาน</span>'}
           </td>
           <td>
             <button class="btn btn-glass" onclick="editCustomer('${c.id}')"><i class="fas fa-edit"></i></button>
