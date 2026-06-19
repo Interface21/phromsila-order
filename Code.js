@@ -179,6 +179,10 @@ function notifyDiscord(message) {
   }
 }
 
+function testDiscord() {
+  notifyDiscord("Test from API!");
+}
+
 // --------------------------------------------------
 // API Endpoints: Config
 // --------------------------------------------------
