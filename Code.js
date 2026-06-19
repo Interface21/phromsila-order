@@ -35,7 +35,8 @@ function doPost(e) {
       'placeOrder': placeOrder,
       'removeOrderItem': removeOrderItem,
       'getCustomerCoupons': getCustomerCoupons,
-      'redeemCoupon': redeemCoupon
+      'redeemCoupon': redeemCoupon,
+      'uploadFileToDrive': uploadFileToDrive
     };
     
     if (handlers[action]) {
