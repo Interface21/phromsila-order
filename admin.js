@@ -663,9 +663,12 @@ let adminState = {
   }
 
   function saveCatalog() {
+    const name = document.getElementById('cat_name').value.trim();
+    if (!name) return Swal.fire('ข้อผิดพลาด', 'กรุณากรอกชื่อหมวดหมู่', 'warning');
+    
     const data = {
       id: document.getElementById('cat_id').value,
-      name: document.getElementById('cat_name').value,
+      name: name,
       active: document.getElementById('cat_active').checked
     };
     Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
@@ -873,11 +876,19 @@ let adminState = {
   }
 
   function submitProductData() {
+    const name = document.getElementById('prod_name').value.trim();
+    const price = document.getElementById('prod_price').value;
+    const catalogId = document.getElementById('prod_catalog_id').value;
+    
+    if (!name || !price || !catalogId) {
+      return Swal.fire('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน (หมวดหมู่, ชื่อสินค้า, ราคา)', 'warning');
+    }
+    
     const data = {
       id: document.getElementById('prod_id').value,
-      catalog_id: document.getElementById('prod_catalog_id').value,
-      name: document.getElementById('prod_name').value,
-      price: document.getElementById('prod_price').value,
+      catalog_id: catalogId,
+      name: name,
+      price: price,
       promo_price: document.getElementById('prod_promo_price').value || 0,
       promo_expire: document.getElementById('prod_promo_expire').value || '',
       image: document.getElementById('prod_image_url').value,
@@ -977,10 +988,14 @@ let adminState = {
   }
 
   function saveCustomer() {
+    const name = document.getElementById('cust_name').value.trim();
+    const mobile_no = document.getElementById('cust_phone').value.trim();
+    if (!name || !mobile_no) return Swal.fire('ข้อผิดพลาด', 'กรุณากรอกชื่อและเบอร์โทรศัพท์', 'warning');
+
     const data = {
       id: document.getElementById('cust_id').value,
-      name: document.getElementById('cust_name').value,
-      mobile_no: document.getElementById('cust_phone').value,
+      name: name,
+      mobile_no: mobile_no,
       delivery_address: document.getElementById('cust_address').value,
       active: !document.getElementById('cust_banned').checked
     };
