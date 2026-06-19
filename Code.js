@@ -136,6 +136,19 @@ function softDeleteRow(sheet, rowIndex) {
   }
 }
 
+function appendRowSafely(sheet, rowArray) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const newRow = new Array(headers.length).fill('');
+  for(let i=0; i<rowArray.length; i++) {
+    newRow[i] = rowArray[i];
+  }
+  const softDelIndex = headers.findIndex(h => String(h).trim().toLowerCase() === 'soft_delete');
+  if (softDelIndex > -1) {
+    newRow[softDelIndex] = false;
+  }
+  sheet.appendRow(newRow);
+}
+
 // --------------------------------------------------
 // Image Upload logic
 // --------------------------------------------------
@@ -295,7 +308,7 @@ function saveCatalog(data) {
       notifyDiscord("📝 แอดมินแก้ไขข้อมูลหมวดหมู่: " + data.name);
   } else {
     data.id = getUuid();
-    sheet.appendRow([data.id, data.name, data.active]);
+    appendRowSafely(sheet, [data.id, data.name, data.active]);
     notifyDiscord("📁 แอดมินเพิ่มหมวดหมู่ใหม่: " + data.name);
   }
   return { success: true, data: data };
@@ -346,7 +359,7 @@ function saveProduct(data) {
       notifyDiscord("📝 แอดมินแก้ไขข้อมูลสินค้า: " + data.name);
   } else {
     data.id = getUuid();
-    sheet.appendRow([
+    appendRowSafely(sheet, [
       data.id, data.catalog_id, data.sku_code, data.name, data.image,
       data.price, data.unit_name, data.promo_price, data.promo_expire, data.active, data.view_price
     ]);
@@ -385,7 +398,7 @@ function saveCustomer(data) {
       notifyDiscord("👤 แอดมินแก้ไขข้อมูลลูกค้า: " + data.name);
   } else {
     data.id = getUuid();
-    sheet.appendRow([
+    appendRowSafely(sheet, [
       data.id, data.name, safePhone, data.delivery_address,
       data.delivery_count_accumulate || 0, data.delivery_count_usage || 0, data.active !== false
     ]);
@@ -529,7 +542,7 @@ function placeOrder(orderData, cartItems) {
   
   const orderId = getUuid();
   
-  orderSheet.appendRow([
+  appendRowSafely(orderSheet, [
     orderId,
     orderNo,
     orderData.pos_order_ref || "",
@@ -546,7 +559,7 @@ function placeOrder(orderData, cartItems) {
   ]);
   
   cartItems.forEach(item => {
-    detailSheet.appendRow([
+    appendRowSafely(detailSheet, [
       getUuid(),
       orderId,
       item.product_id,
@@ -683,8 +696,8 @@ function redeemCoupon(customerId) {
   const couponId = getUuid();
   const dateStr = Utilities.formatDate(new Date(), "Asia/Bangkok", "yyyy-MM-dd HH:mm:ss");
   
-  // Expected Columns: A=id, B=customer_id, C=created_at, D=discount_amount, E=status, F=used_order_id
-  couponSheet.appendRow([
+  // Expected Columns: A=id, B=customer_id, C=created_at, D=discount_amount, E=status, F=used_order_id, G=soft_delete
+  appendRowSafely(couponSheet, [
     couponId,
     customerId,
     dateStr,
