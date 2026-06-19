@@ -172,10 +172,34 @@ function notifyDiscord(message) {
     payload: payload,
     muteHttpExceptions: true
   };
-  try {
-    UrlFetchApp.fetch(url, options);
-  } catch (e) {
-    console.error("Discord webhook failed", e);
+  let attempts = 0;
+  const maxAttempts = 3;
+  
+  while (attempts < maxAttempts) {
+    try {
+      const response = UrlFetchApp.fetch(url, options);
+      const statusCode = response.getResponseCode();
+      
+      if (statusCode >= 200 && statusCode < 300) {
+        break; // Success
+      }
+      
+      // If it's an error (like 429 Too Many Requests)
+      attempts++;
+      if (attempts >= maxAttempts) {
+        console.error("Discord webhook failed after 3 attempts. Status:", statusCode);
+        break;
+      }
+      Utilities.sleep(3000); // Wait 3 seconds before retry
+      
+    } catch (e) {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        console.error("Discord webhook failed with exception after 3 attempts", e);
+        break;
+      }
+      Utilities.sleep(3000); // Wait 3 seconds before retry
+    }
   }
 }
 
