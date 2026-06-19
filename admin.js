@@ -716,19 +716,31 @@ let adminState = {
       const cat = adminState.catalogs.find(c => c.id === p.catalog_id);
       const unit = p.unit_name || 'ชิ้น';
       const imgHtml = p.image ? `<img src="${p.image}" width="40" height="40" style="border-radius:8px; object-fit:cover;">` : `<div style="width:40px; height:40px; border-radius:8px; background:#ddd; display:flex; align-items:center; justify-content:center; color:#888;"><i class="fas fa-image"></i></div>`;
+      let promoBadge = '';
+      if (p.promo_price > 0) {
+        promoBadge = ` <span class="badge bg-danger" style="margin-left:5px; font-size:0.75rem;">โปร ฿${parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}/${unit}</span>`;
+      }
+      
+      let statusBadges = `<div style="margin-top:5px; font-size:0.75rem; display:flex; gap:5px; flex-wrap:wrap;">`;
+      if (p.active) {
+        statusBadges += `<span class="badge bg-success">แสดงหน้าร้าน</span>`;
+      } else {
+        statusBadges += `<span class="badge bg-secondary">ซ่อนหน้าร้าน</span>`;
+      }
+      if (p.view_price === false) {
+        statusBadges += `<span class="badge bg-warning text-dark">ราคาตามตกลง</span>`;
+      }
+      statusBadges += `</div>`;
+
       tbody.innerHTML += `
         <tr>
           <td>${imgHtml}</td>
-          <td>${p.name}</td>
-          <td>${cat ? cat.name : '-'}</td>
-          <td>฿${parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}/${unit}</td>
-          <td>${p.promo_price > 0 ? '฿'+parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})+'/'+unit : '-'}</td>
           <td>
-            <label class="switch">
-              <input type="checkbox" ${p.active ? 'checked' : ''} onchange="toggleProductActive('${p.id}', this)">
-              <span class="slider"></span>
-            </label>
+            <div style="font-weight:500;">${p.name}</div>
+            ${statusBadges}
           </td>
+          <td>${cat ? cat.name : '-'}</td>
+          <td>฿${parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2})}/${unit}${promoBadge}</td>
           <td>
             <button class="btn btn-glass" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
             <button class="btn btn-danger" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
