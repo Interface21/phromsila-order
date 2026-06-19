@@ -692,7 +692,7 @@ let adminState = {
           document.getElementById('cfg_reset_pwd').value = '';
           window.location.reload();
         } else {
-          alert('รหัสผ่าน Master Password ไม่ถูกต้อง');
+          alert(res.message || 'รหัสผ่าน Master Password ไม่ถูกต้อง');
         }
       }).resetDatabase(hash);
     });
