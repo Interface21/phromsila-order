@@ -785,10 +785,29 @@ let state = {
     cartEl.classList.remove('d-none');
     
     const totalQty = state.cart.reduce((sum, item) => sum + item.quantity, 0);
-    const totalAmt = state.cart.reduce((sum, item) => sum + item.total, 0);
+    
+    let hasHiddenPrice = false;
+    let visibleTotalAmt = 0;
+    state.cart.forEach(item => {
+      if (item.view_price === false) {
+        hasHiddenPrice = true;
+      } else {
+        visibleTotalAmt += item.total;
+      }
+    });
     
     document.getElementById('floatingCartCount').textContent = `${totalQty.toLocaleString('en-US')} รายการ`;
-    document.getElementById('floatingCartTotal').textContent = `฿${totalAmt.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    
+    const totalEl = document.getElementById('floatingCartTotal');
+    if (hasHiddenPrice) {
+      if (visibleTotalAmt > 0) {
+        totalEl.innerHTML = `<span style="font-size:0.8rem;">฿${visibleTotalAmt.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} + </span>ราคาตามตกลง`;
+      } else {
+        totalEl.textContent = 'ราคาตามตกลง';
+      }
+    } else {
+      totalEl.textContent = `฿${visibleTotalAmt.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    }
   }
 
   function renderCart() {
