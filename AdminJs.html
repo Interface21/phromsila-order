@@ -229,11 +229,16 @@
     const cust = adminState.customers.find(c => c.id === o.customer_id);
     const custName = cust ? cust.name : 'ไม่ระบุ';
     
+    let paymentText = '<span style="color:#3b82f6; font-weight:bold;">โอน/คิวอาร์โค้ด(QR)</span>';
+    if (o.payment === 'cash') paymentText = '<span style="color:#eab308; font-weight:bold;">เงินสด</span>';
+    else if (o.payment === 'credit') paymentText = '<span style="color:#f97316; font-weight:bold;">เครดิต</span>';
+    else if (o.payment === 'thaiplus') paymentText = '<span style="color:#8b5cf6; font-weight:bold;">โครงการรัฐ</span>';
+
     document.getElementById('ord_info').innerHTML = `
       ลูกค้า: ${custName} <br>
       รูปแบบ: ${o.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับที่ร้าน'} <br>
       ${o.pickup_time === '-' ? '' : 'รอบ: ' + o.pickup_time + '<br>'}
-      วิธีชำระเงิน: ${o.payment}
+      วิธีชำระเงิน: ${paymentText}
       ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;">เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
     `;
     

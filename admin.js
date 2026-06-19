@@ -444,8 +444,9 @@ let adminState = {
     const cust = adminState.customers.find(c => c.id === o.customer_id);
     const custName = cust ? cust.name : 'ไม่ระบุ';
     
-    let paymentText = '<span style="color:#3b82f6; font-weight:bold;">โอน/เครดิต/คิวอาร์โค้ด</span>';
+    let paymentText = '<span style="color:#3b82f6; font-weight:bold;">โอน/คิวอาร์โค้ด(QR)</span>';
     if (o.payment === 'cash') paymentText = '<span style="color:#eab308; font-weight:bold;">เงินสด</span>';
+    else if (o.payment === 'credit') paymentText = '<span style="color:#f97316; font-weight:bold;">เครดิต</span>';
     else if (o.payment === 'thaiplus') paymentText = '<span style="color:#8b5cf6; font-weight:bold;">โครงการรัฐ</span>';
     const custPhone = cust && cust.mobile_no ? `<span class="badge badge-order" style="margin-left:5px; display:inline-flex; align-items:center; gap:4px; font-weight:normal;"><i class="fas fa-phone-alt"></i> ${cust.mobile_no}</span>` : '';
     const deliveryAddr = o.pickup_type === 'delivery' ? `<br>ที่อยู่จัดส่ง: ${cust ? (cust.delivery_address || 'ไม่ระบุ') : 'ไม่ระบุ'}` : '';
