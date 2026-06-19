@@ -421,7 +421,15 @@ function updateOrderStatus(id, status, reason = "") {
     if (colReason > 0) sheet.getRange(rowIndex, colReason).setValue(reason);
     if (colUpdate > 0) sheet.getRange(rowIndex, colUpdate).setValue(new Date().toISOString());
     
-    notifyDiscord(`🔄 แอดมินเปลี่ยนสถานะคำสั่งซื้อ #${orderData.order_no} เป็น ${status} ${reason ? `(เหตุผล: ${reason})` : ''}`);
+    const statusMap = {
+      'order': 'รับคำสั่งซื้อ',
+      'preparing_order': 'กำลังจัดเตรียม',
+      'preparing_shipment': 'รอจัดส่ง/รับ',
+      'shipped': 'เสร็จสิ้น',
+      'cancel': 'ยกเลิก'
+    };
+    const statusThai = statusMap[status] || status;
+    notifyDiscord(`🔄 แอดมินเปลี่ยนสถานะคำสั่งซื้อ #${orderData.order_no} เป็น ${statusThai} ${reason ? `(เหตุผล: ${reason})` : ''}`);
     
     if (status === 'cancel') {
       // Reverse Delivery Count if applicable
