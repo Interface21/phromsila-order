@@ -681,8 +681,11 @@ function resetDatabase(pwdHash) {
   
   if (!masterHash) masterHash = 'c4d107179d77aff7676c6fd4526df1ac4384f1733959c909f4ef15bb5b2a569d';
   
-  if (pwdHash !== masterHash) {
-    return { success: false, message: "Invalid master password" };
+  let configData = getSheetDataAsObjects('config')[0];
+  let configPwd = configData ? configData.pwd : '';
+  
+  if (pwdHash !== masterHash && pwdHash !== configPwd) {
+    return { success: false, message: "Invalid password" };
   }
   
   const tablesToClear = ['product_catalog', 'product', 'customer', 'order', 'order_detail', 'customer_coupon'];
