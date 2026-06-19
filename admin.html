@@ -387,6 +387,7 @@
           <input type="number" id="cfg_coupon_discount" class="input-control" placeholder="เช่น 20">
         </div>
       </div>
+      <p style="font-size: 0.85rem; color: #ef4444; margin-top: -5px; margin-bottom: 15px;">* ถ้ายอดใดยอดนึงเป็น 0 ระบบจะปิดฟังก์ชั่นแลกคูปองอัตโนมัติ</p>
       <div class="input-group">
         <label>วันหยุดประจำสัปดาห์</label>
         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; padding: 10px; background: #f8fafc; border: 1px solid #94a3b8; border-radius: 8px;" id="cfg_close_days_container">
@@ -406,7 +407,7 @@
       </div>
       <button class="btn btn-primary mt-2" onclick="saveConfig()">บันทึกการตั้งค่า</button>
       <hr style="margin:20px 0; border:none; border-top:1px solid rgba(0,0,0,0.1)">
-      <h4>รีเซ็ตระบบข้อมูลทดสอบ</h4>
+      <h4>รีเซ็ตระบบข้อมูลทั้งหมด</h4>
       <p style="font-size:0.85rem; color:#ef4444; margin-top:5px; margin-bottom:10px;">* คำเตือน: การกระทำนี้จะลบข้อมูล สินค้า, หมวดหมู่, ลูกค้า, คำสั่งซื้อ และคูปอง ทั้งหมด (ยกเว้นตาราง Config) และไม่สามารถกู้คืนได้</p>
       <div class="input-group">
         <input type="password" id="cfg_reset_pwd" class="input-control" placeholder="ยืนยันด้วย Master Password">
