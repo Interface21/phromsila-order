@@ -681,32 +681,56 @@ let adminState = {
   function resetDatabase() {
     const pwd = document.getElementById('cfg_reset_pwd').value;
     if (!pwd) return alert('กรุณากรอก Master Password');
-    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลทดสอบทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้!')) return;
     
-    Swal.fire({title: 'กำลังประมวลผล', text: 'กำลังรีเซ็ตข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-    sha256(pwd).then(hash => {
-      google.script.run.withSuccessHandler(res => {
-        Swal.close();
-        if (res.success) {
-          alert('รีเซ็ตระบบข้อมูลทดสอบเรียบร้อยแล้ว');
-          document.getElementById('cfg_reset_pwd').value = '';
-          window.location.reload();
-        } else {
-          alert(res.message || 'รหัสผ่าน Master Password ไม่ถูกต้อง');
-        }
-      }).resetDatabase(hash);
+    Swal.fire({
+      title: 'ยืนยันการลบข้อมูล',
+      text: 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลทดสอบทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'ใช่, ลบข้อมูลทั้งหมด',
+      cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({title: 'กำลังประมวลผล', text: 'กำลังรีเซ็ตข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        sha256(pwd).then(hash => {
+          google.script.run.withSuccessHandler(res => {
+            Swal.close();
+            if (res.success) {
+              alert('รีเซ็ตระบบข้อมูลทดสอบเรียบร้อยแล้ว');
+              document.getElementById('cfg_reset_pwd').value = '';
+              window.location.reload();
+            } else {
+              alert(res.message || 'รหัสผ่าน Master Password ไม่ถูกต้อง');
+            }
+          }).resetDatabase(hash);
+        });
+      }
     });
   }
 
   function deleteCatalog(id) {
-    if(!confirm('คุณแน่ใจหรือไม่ที่จะลบรายการนี้?')) return;
-    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-    google.script.run.withSuccessHandler(res => {
-      Swal.close();
-      if(res.success) {
-        google.script.run.withSuccessHandler(r => { adminState.catalogs = r.data; renderCatalogs(); }).getCatalogs();
+    Swal.fire({
+      title: 'ยืนยันการลบ',
+      text: 'คุณแน่ใจหรือไม่ที่จะลบรายการนี้?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'ลบ',
+      cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        google.script.run.withSuccessHandler(res => {
+          Swal.close();
+          if(res.success) {
+            google.script.run.withSuccessHandler(r => { adminState.catalogs = r.data; renderCatalogs(); }).getCatalogs();
+          }
+        }).deleteCatalog(id);
       }
-    }).deleteCatalog(id);
+    });
   }
 
   // --- Products ---
@@ -873,14 +897,26 @@ let adminState = {
   }
 
   function deleteProduct(id) {
-    if(!confirm('คุณแน่ใจหรือไม่ที่จะลบสินค้านี้?')) return;
-    Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-    google.script.run.withSuccessHandler(res => {
-      Swal.close();
-      if(res.success) {
-        google.script.run.withSuccessHandler(r => { adminState.products = r.data; renderProducts(); }).getProducts();
+    Swal.fire({
+      title: 'ยืนยันการลบ',
+      text: 'คุณแน่ใจหรือไม่ที่จะลบสินค้านี้?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'ลบ',
+      cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        google.script.run.withSuccessHandler(res => {
+          Swal.close();
+          if(res.success) {
+            google.script.run.withSuccessHandler(r => { adminState.products = r.data; renderProducts(); }).getProducts();
+          }
+        }).deleteProduct(id);
       }
-    }).deleteProduct(id);
+    });
   }
 
   // --- Customers ---
