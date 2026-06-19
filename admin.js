@@ -782,6 +782,7 @@ let adminState = {
       }
     }
     document.getElementById('prod_active').checked = p.active;
+    document.getElementById('prod_hide_price').checked = p.view_price === false || String(p.view_price).toUpperCase() === 'FALSE';
     document.getElementById('prod_image_url').value = p.image;
     document.getElementById('img_preview').innerHTML = `<img src="${p.image}" width="100" style="border-radius:8px;">`;
     document.getElementById('modal-product').classList.add('active');
@@ -817,6 +818,7 @@ let adminState = {
       promo_expire: document.getElementById('prod_promo_expire').value || '',
       image: document.getElementById('prod_image_url').value,
       active: document.getElementById('prod_active').checked,
+      view_price: !document.getElementById('prod_hide_price').checked,
       sku_code: '',
       unit_name: 'ชิ้น'
     };

@@ -269,9 +269,9 @@ function saveProduct(data) {
     const index = items.findIndex(p => p.id === data.id);
     if (index >= 0) {
       const rowIndex = items[index]._rowIndex;
-      sheet.getRange(rowIndex, 2, 1, 9).setValues([[
+      sheet.getRange(rowIndex, 2, 1, 10).setValues([[
         data.catalog_id, data.sku_code, data.name, data.image, 
-        data.price, data.unit_name, data.promo_price, data.promo_expire, data.active
+        data.price, data.unit_name, data.promo_price, data.promo_expire, data.active, data.view_price
       ]]);
     }
   } else {
@@ -279,7 +279,7 @@ function saveProduct(data) {
     data.id = getUuid();
     sheet.appendRow([
       data.id, data.catalog_id, data.sku_code, data.name, data.image,
-      data.price, data.unit_name, data.promo_price, data.promo_expire, data.active
+      data.price, data.unit_name, data.promo_price, data.promo_expire, data.active, data.view_price
     ]);
   }
   return { success: true, data: data };

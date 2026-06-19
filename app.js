@@ -644,10 +644,15 @@ let state = {
       
       const unitHtml = `<span style="font-size: 0.8em; color: var(--text-light); font-weight: normal;">/${unit}</span>`;
       
-      const priceHtml = isPromo
-        ? `<span class="promo-price" style="color: var(--primary);">฿${pPromoStr}${unitHtml}</span> <span class="old-price">฿${pPriceStr}</span>` 
-        : `<span class="product-price" style="color: var(--primary);">฿${pPriceStr}${unitHtml}</span>`;
-        
+      let priceHtml;
+      const viewPrice = p.view_price !== false && String(p.view_price).toUpperCase() !== 'FALSE';
+      if (!viewPrice) {
+        priceHtml = `<span style="color: #f59e0b; font-size: 0.85rem; font-weight: bold;">ราคาตามตกลงกับทางร้าน</span>`;
+      } else {
+        priceHtml = isPromo
+          ? `<span class="promo-price" style="color: var(--primary);">฿${pPromoStr}${unitHtml}</span> <span class="old-price">฿${pPriceStr}</span>` 
+          : `<span class="product-price" style="color: var(--primary);">฿${pPriceStr}${unitHtml}</span>`;
+      }
       let pImg = p.image;
       if (pImg && pImg.includes('drive.google.com')) {
         const match = pImg.match(/id=([a-zA-Z0-9_-]+)/);
@@ -744,7 +749,8 @@ let state = {
         name: product.name,
         price: price,
         quantity: 1,
-        total: price
+        total: price,
+        view_price: product.view_price !== false && String(product.view_price).toUpperCase() !== 'FALSE'
       });
     }
     
@@ -804,8 +810,16 @@ let state = {
       const imgHtml = p.image ? `<img src="${p.image}" class="cart-item-img">` : `<div class="cart-item-img"><i class="fas fa-image"></i></div>`;
       
       const unit = p.unit_name || 'ชิ้น';
-      const itemPriceStr = parseFloat(item.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2});
-      const itemTotalStr = parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+      let itemPriceStr = parseFloat(item.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2});
+      let itemTotalStr = parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+      
+      let priceDisplay = `฿${itemPriceStr}`;
+      let totalDisplay = `฿${itemTotalStr}`;
+      
+      if (item.view_price === false) {
+        priceDisplay = `<span style="color: #f59e0b; font-weight: bold;">ราคาตามตกลง</span>`;
+        totalDisplay = `<span style="color: #f59e0b; font-weight: bold; font-size: 0.9rem;">(ตามตกลง)</span>`;
+      }
       
       html += `
         <div class="cart-item">
@@ -813,10 +827,10 @@ let state = {
           <div style="flex-grow:1;">
             <button class="trash-btn" onclick="removeItem(${index})"><i class="fas fa-trash-alt"></i></button>
             <div style="font-weight:600; padding-right:20px; line-height:1.2; margin-bottom:5px;">${item.name}</div>
-            <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 5px;">${unit} | ฿${itemPriceStr}</div>
+            <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 5px;">${unit} | ${priceDisplay}</div>
             
             <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-              <div style="font-weight:bold; color:var(--primary); font-size:1.1rem;">฿${itemTotalStr}</div>
+              <div style="font-weight:bold; color:var(--primary); font-size:1.1rem;">${totalDisplay}</div>
               <div class="qty-control">
                 <button class="qty-btn" onclick="updateQty(${index}, -1)"><i class="fas fa-minus"></i></button>
                 <span style="font-weight:bold; color:var(--primary); min-width: 15px; text-align:center;">${item.quantity}</span>
@@ -938,8 +952,26 @@ let state = {
     document.getElementById('pickupTimeSection').style.display = isDelivery ? 'block' : 'none';
     document.getElementById('deliveryFeeSection').style.display = isDelivery ? 'flex' : 'none';
     
-    const subtotal = state.cart.reduce((sum, item) => sum + item.total, 0);
-    document.getElementById('summarySubtotal').textContent = `฿${subtotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    let subtotalDisplay = 0;
+    let trueSubtotal = 0;
+    let hasHiddenPrice = false;
+    
+    state.cart.forEach(item => {
+      trueSubtotal += item.total;
+      if (item.view_price !== false) {
+        subtotalDisplay += item.total;
+      } else {
+        hasHiddenPrice = true;
+      }
+    });
+    
+    const noteEl = document.getElementById('hiddenPriceNote');
+    if (noteEl) {
+      if (hasHiddenPrice) noteEl.classList.remove('d-none');
+      else noteEl.classList.add('d-none');
+    }
+    
+    document.getElementById('summarySubtotal').textContent = `฿${subtotalDisplay.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
     
     let deliveryFee = 0;
     if (isDelivery) {
@@ -974,10 +1006,12 @@ let state = {
       document.getElementById('couponDiscountSection').classList.add('d-none');
     }
     
-    const netTotal = Math.max(0, subtotal + deliveryFee - couponDiscount);
-    document.getElementById('summaryTotal').textContent = `฿${netTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    const displayNetTotal = Math.max(0, subtotalDisplay + deliveryFee - couponDiscount);
+    const trueNetTotal = Math.max(0, trueSubtotal + deliveryFee - couponDiscount);
     
-    return { subtotal, deliveryFee, couponDiscount, usedCouponId, netTotal };
+    document.getElementById('summaryTotal').textContent = `฿${displayNetTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    
+    return { subtotal: trueSubtotal, subtotalDisplay, deliveryFee, couponDiscount, usedCouponId, netTotal: trueNetTotal, displayNetTotal };
   }
 
   function placeOrder() {
@@ -1136,12 +1170,27 @@ let state = {
         const s = statusMap[o.status] || { label: o.status, class: 'badge-order' };
         const dateStr = new Date(o.date_time).toLocaleString('th-TH');
         
+        let hasHiddenPrice = false;
+        let subtotalDisplay = 0;
         let itemsHtml = '';
         o.items.forEach(item => {
           const p = state.products.find(prod => prod.id === item.product_id);
           const name = p ? p.name : 'ไม่ระบุ';
-          itemsHtml += `<div style="font-size:0.9rem; color:var(--text-light);">${item.quantity} x ${name}</div>`;
+          let itemStr = `${item.quantity} x ${name}`;
+          if (p && (p.view_price === false || String(p.view_price).toUpperCase() === 'FALSE')) {
+            hasHiddenPrice = true;
+            itemStr += ` <span style="color:#f59e0b; font-size:0.8rem;">(ตามตกลง)</span>`;
+          } else {
+            subtotalDisplay += (item.quantity * item.price);
+          }
+          itemsHtml += `<div style="font-size:0.9rem; color:var(--text-light);">${itemStr}</div>`;
         });
+        
+        let displayNetTotal = Math.max(0, subtotalDisplay + Number(o.delivery_fee) - Number(o.coupon_discount));
+        let totalHtml = `฿${parseFloat(displayNetTotal).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+        if (hasHiddenPrice) {
+          totalHtml += ` <br><span style="color:#f59e0b; font-size:0.8rem; font-weight:normal;">(ไม่รวมราคาสินค้าตามตกลง)</span>`;
+        }
         
         const pickupMethod = o.pickup_type === 'delivery' ? '<span style="color:#4A90E2; font-weight:bold;">จัดส่ง</span>' : '<span style="color:#f59e0b; font-weight:bold;">รับที่ร้าน</span>';
         const pickupTime = o.pickup_time === '-' ? '' : ` (${o.pickup_time})`;
@@ -1171,7 +1220,7 @@ let state = {
               <div>${cancelBtn}</div>
               <div style="text-align:right;">
                 <span>ยอดสุทธิ </span>
-                <span style="color:var(--primary); font-size:1.1rem;">฿${parseFloat(o.net_total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+                <span style="color:var(--primary); font-size:1.1rem;">${totalHtml}</span>
               </div>
             </div>
           </div>
