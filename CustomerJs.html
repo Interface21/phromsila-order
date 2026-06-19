@@ -193,14 +193,18 @@
     }).getConfig();
   }
 
+  function isProductPromoActive(p) {
+    if (!(p.promo_price > 0 && p.promo_price < p.price)) return false;
+    if (!p.promo_expire) return true;
+    const expireDate = new Date(p.promo_expire);
+    expireDate.setHours(23, 59, 59, 999);
+    return new Date() <= expireDate;
+  }
+
   function renderHome() {
     // Check if there are active promos
     const now = new Date();
-    const hasPromo = state.products.some(p => {
-      const isPromo = p.promo_price > 0 && p.promo_price < p.price;
-      const isNotExpired = !p.promo_expire || new Date(p.promo_expire) >= now;
-      return isPromo && isNotExpired;
-    });
+    const hasPromo = state.products.some(p => isProductPromoActive(p));
 
     // Determine catalogs that have at least one active product
     const activeCatalogs = state.catalogs.filter(cat => state.products.some(p => p.catalog_id === cat.id));
@@ -263,11 +267,7 @@
       filtered = filtered.filter(p => p.name.toLowerCase().includes(state.searchQuery.toLowerCase()));
     } else {
       if (state.currentCategory === 'promo') {
-        filtered = filtered.filter(p => {
-          const isPromo = p.promo_price > 0 && p.promo_price < p.price;
-          const isNotExpired = !p.promo_expire || new Date(p.promo_expire) >= now;
-          return isPromo && isNotExpired;
-        });
+        filtered = filtered.filter(p => isProductPromoActive(p));
       } else {
         filtered = filtered.filter(p => p.catalog_id === state.currentCategory);
       }
@@ -283,7 +283,7 @@
     const displayedProducts = filtered.slice(0, state.productLimit || 10);
     
     displayedProducts.forEach(p => {
-      const isPromo = p.promo_price > 0 && p.promo_price < p.price && (!p.promo_expire || new Date(p.promo_expire) >= now);
+      const isPromo = isProductPromoActive(p);
       const unit = p.unit_name || 'ชิ้น';
       const pPriceStr = parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2});
       const pPromoStr = parseFloat(p.promo_price).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2});
@@ -363,8 +363,7 @@
     const product = state.products.find(p => p.id === productId);
     if (!product) return;
     
-    const now = new Date();
-    const isPromo = product.promo_price > 0 && product.promo_price < product.price && (!product.promo_expire || new Date(product.promo_expire) >= now);
+    const isPromo = isProductPromoActive(product);
     const price = isPromo ? product.promo_price : product.price;
     
     const existing = state.cart.find(item => item.product_id === productId);
