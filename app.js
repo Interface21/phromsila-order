@@ -415,6 +415,16 @@ let state = {
     const select = document.getElementById('checkoutCouponSelect');
     if (!section || !select) return;
     
+    const reqCount = state.config ? parseInt(state.config.delivery_count || 10) : 10;
+    const couponValue = state.config ? parseInt(state.config.coupon_discount || 20) : 20;
+    
+    if (reqCount === 0 || couponValue === 0) {
+      section.classList.add('d-none');
+      select.innerHTML = '<option value="">ไม่ใช้คูปอง</option>';
+      if (typeof calculateTotal === 'function') calculateTotal();
+      return;
+    }
+    
     if (state.coupons && state.coupons.length > 0) {
       section.classList.remove('d-none');
       let html = '<option value="">ไม่ใช้คูปอง</option>';
@@ -524,6 +534,16 @@ let state = {
         const closeDaysStr = state.config.close_day != null ? state.config.close_day : '';
         if (String(closeDaysStr).split(',').includes(String(today))) {
           document.getElementById('shopClosedBanner').classList.remove('d-none');
+        }
+        
+        // Hide coupons if disabled
+        const reqCount = state.config ? parseInt(state.config.delivery_count || 10) : 10;
+        const couponValue = state.config ? parseInt(state.config.coupon_discount || 20) : 20;
+        const menuRewards = document.getElementById('menuRewards');
+        if (reqCount === 0 || couponValue === 0) {
+          if (menuRewards) menuRewards.classList.add('d-none');
+        } else {
+          if (menuRewards) menuRewards.classList.remove('d-none');
         }
 
         // load catalogs

@@ -412,6 +412,26 @@
     }).saveCatalog(data);
   }
 
+  function resetDatabase() {
+    const pwd = document.getElementById('cfg_reset_pwd').value;
+    if (!pwd) return alert('กรุณากรอก Master Password');
+    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลทดสอบทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้!')) return;
+    
+    showLoading();
+    hashSHA256(pwd).then(hash => {
+      google.script.run.withSuccessHandler(res => {
+        hideLoading();
+        if (res.success) {
+          alert('รีเซ็ตระบบข้อมูลทดสอบเรียบร้อยแล้ว');
+          document.getElementById('cfg_reset_pwd').value = '';
+          window.location.reload();
+        } else {
+          alert('รหัสผ่าน Master Password ไม่ถูกต้อง');
+        }
+      }).resetDatabase(hash);
+    });
+  }
+
   function deleteCatalog(id) {
     if(!confirm('คุณแน่ใจหรือไม่ที่จะลบรายการนี้?')) return;
     Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});

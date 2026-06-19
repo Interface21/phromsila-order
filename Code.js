@@ -161,6 +161,25 @@ function adminLogin(pwdHash) {
 }
 
 // --------------------------------------------------
+// Helper: Discord Notification
+// --------------------------------------------------
+function notifyDiscord(message) {
+  const url = "https://discord.com/api/webhooks/1517113163810865213/8s4gbZPBkxLUOnqErhK94iybAN0QTuSR6fYSKJYlSCTo4GN5QQqN4H0T4YgX3OaFbUbU";
+  const payload = JSON.stringify({ content: message });
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    payload: payload,
+    muteHttpExceptions: true
+  };
+  try {
+    UrlFetchApp.fetch(url, options);
+  } catch (e) {
+    console.error("Discord webhook failed", e);
+  }
+}
+
+// --------------------------------------------------
 // API Endpoints: Config
 // --------------------------------------------------
 function getConfig() {
@@ -203,6 +222,7 @@ function updateConfig(data, newPwdHash) {
   if (sheet.getMaxRows() < 2) sheet.insertRowAfter(1);
   
   sheet.getRange(2, 1, 1, headers.length).setValues([rowData]);
+  notifyDiscord("⚙️ แอดมินอัปเดตการตั้งค่าร้านค้า");
   return { success: true };
 }
 
@@ -215,28 +235,24 @@ function getCatalogs() {
 
 function saveCatalog(data) {
   const sheet = getSheet('product_catalog');
-  if (data.id) {
-    // Update
-    const items = getSheetDataAsObjects('product_catalog');
-    const index = items.findIndex(c => c.id === data.id);
-    if (index >= 0) {
-      const rowIndex = items[index]._rowIndex;
+  const rowIndex = data.id ? findRowIndex(sheet, data.id, 0) : -1;
+  if (rowIndex > -1) {
       sheet.getRange(rowIndex, 2, 1, 2).setValues([[data.name, data.active]]);
-    }
+      notifyDiscord("📝 แอดมินแก้ไขข้อมูลหมวดหมู่: " + data.name);
   } else {
-    // Insert
     data.id = getUuid();
     sheet.appendRow([data.id, data.name, data.active]);
+    notifyDiscord("📁 แอดมินเพิ่มหมวดหมู่ใหม่: " + data.name);
   }
   return { success: true, data: data };
 }
 
 function deleteCatalog(id) {
   const sheet = getSheet('product_catalog');
-  const items = getSheetDataAsObjects('product_catalog');
-  const index = items.findIndex(c => c.id === id);
-  if (index >= 0) {
-    sheet.deleteRow(items[index]._rowIndex);
+  const rowIndex = findRowIndex(sheet, id, 0);
+  if (rowIndex > -1) {
+    sheet.deleteRow(rowIndex);
+    notifyDiscord("🗑️ แอดมินลบหมวดหมู่ ID: " + id);
     return { success: true };
   }
   return { success: false, message: "Not found" };
@@ -267,34 +283,30 @@ function getProducts() {
 
 function saveProduct(data) {
   const sheet = getSheet('product');
-  if (data.id) {
-    // Update
-    const items = getSheetDataAsObjects('product');
-    const index = items.findIndex(p => p.id === data.id);
-    if (index >= 0) {
-      const rowIndex = items[index]._rowIndex;
+  const rowIndex = data.id ? findRowIndex(sheet, data.id, 0) : -1;
+  if (rowIndex > -1) {
       sheet.getRange(rowIndex, 2, 1, 10).setValues([[
         data.catalog_id, data.sku_code, data.name, data.image, 
         data.price, data.unit_name, data.promo_price, data.promo_expire, data.active, data.view_price
       ]]);
-    }
+      notifyDiscord("📝 แอดมินแก้ไขข้อมูลสินค้า: " + data.name);
   } else {
-    // Insert
     data.id = getUuid();
     sheet.appendRow([
       data.id, data.catalog_id, data.sku_code, data.name, data.image,
       data.price, data.unit_name, data.promo_price, data.promo_expire, data.active, data.view_price
     ]);
+    notifyDiscord("📦 แอดมินเพิ่มสินค้าใหม่: " + data.name);
   }
   return { success: true, data: data };
 }
 
 function deleteProduct(id) {
   const sheet = getSheet('product');
-  const items = getSheetDataAsObjects('product');
-  const index = items.findIndex(p => p.id === id);
-  if (index >= 0) {
-    sheet.deleteRow(items[index]._rowIndex);
+  const rowIndex = findRowIndex(sheet, id, 0);
+  if (rowIndex > -1) {
+    sheet.deleteRow(rowIndex);
+    notifyDiscord("🗑️ แอดมินลบสินค้า ID: " + id);
     return { success: true };
   }
   return { success: false, message: "Not found" };
@@ -309,34 +321,31 @@ function getCustomers() {
 
 function saveCustomer(data) {
   const sheet = getSheet('customer');
-  if (data.id) {
-    const items = getSheetDataAsObjects('customer');
-    const index = items.findIndex(c => c.id === data.id);
-    if (index >= 0) {
-      const rowIndex = items[index]._rowIndex;
-      const safePhone = data.mobile_no ? "'" + data.mobile_no.toString().replace(/^'/, '') : "";
+  const rowIndex = data.id ? findRowIndex(sheet, data.id, 0) : -1;
+  const safePhone = data.mobile_no ? "'" + data.mobile_no.toString().replace(/^'/, '') : "";
+  if (rowIndex > -1) {
       sheet.getRange(rowIndex, 2, 1, 6).setValues([[
         data.name, safePhone, data.delivery_address,
         data.delivery_count_accumulate, data.delivery_count_usage, data.active
       ]]);
-    }
+      notifyDiscord("👤 แอดมินแก้ไขข้อมูลลูกค้า: " + data.name);
   } else {
     data.id = getUuid();
-    const safePhone = data.mobile_no ? "'" + data.mobile_no.toString().replace(/^'/, '') : "";
     sheet.appendRow([
       data.id, data.name, safePhone, data.delivery_address,
       data.delivery_count_accumulate || 0, data.delivery_count_usage || 0, data.active !== false
     ]);
+    notifyDiscord("👤 แอดมินเพิ่มลูกค้าใหม่: " + data.name);
   }
   return { success: true, data: data };
 }
 
 function deleteCustomer(id) {
   const sheet = getSheet('customer');
-  const items = getSheetDataAsObjects('customer');
-  const index = items.findIndex(p => p.id === id);
-  if (index >= 0) {
-    sheet.deleteRow(items[index]._rowIndex);
+  const rowIndex = findRowIndex(sheet, id, 0);
+  if (rowIndex > -1) {
+    sheet.deleteRow(rowIndex);
+    notifyDiscord("🗑️ แอดมินลบข้อมูลลูกค้า ID: " + id);
     return { success: true };
   }
   return { success: false, message: "Not found" };
@@ -394,16 +403,23 @@ function getOrders() {
 
 function updateOrderStatus(id, status, reason = "") {
   const sheet = getSheet('order');
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const items = getSheetDataAsObjects('order');
   const index = items.findIndex(o => o.id === id);
   if (index >= 0) {
-    const row = items[index]._rowIndex;
-    // status is in column 13
-    sheet.getRange(row, 13).setValue(status);
+    const orderData = items[index];
+    const rowIndex = orderData._rowIndex;
+    
+    const colStatus = headers.indexOf('status') + 1;
+    const colReason = headers.indexOf('cancel_reason') + 1;
+    const colUpdate = headers.indexOf('updated_at') + 1;
+    sheet.getRange(rowIndex, colStatus).setValue(status);
+    if (colReason > 0) sheet.getRange(rowIndex, colReason).setValue(reason);
+    if (colUpdate > 0) sheet.getRange(rowIndex, colUpdate).setValue(new Date().toISOString());
+    
+    notifyDiscord(`🔄 แอดมินเปลี่ยนสถานะคำสั่งซื้อ #${orderData.order_no} เป็น ${status} ${reason ? `(เหตุผล: ${reason})` : ''}`);
+    
     if (status === 'cancel') {
-      if (reason) sheet.getRange(row, 14).setValue(reason);
-      
-      const orderData = items[index];
       // Reverse Delivery Count if applicable
       if (orderData.pickup_type === 'delivery') {
         const custSheet = getSheet('customer');
@@ -617,3 +633,32 @@ function redeemCoupon(customerId) {
   return { success: true, message: 'แลกคูปองเรียบร้อยแล้ว' };
 }
 
+// --------------------------------------------------
+// API Endpoints: Database Management
+// --------------------------------------------------
+function resetDatabase(pwdHash) {
+  const configSheet = getSheet('config');
+  let masterHash = '';
+  try {
+    masterHash = configSheet.getRange('A3').getValue();
+  } catch(e) {}
+  
+  if (!masterHash) masterHash = 'c4d107179d77aff7676c6fd4526df1ac4384f1733959c909f4ef15bb5b2a569d';
+  
+  if (pwdHash !== masterHash) {
+    return { success: false, message: "Invalid master password" };
+  }
+  
+  const tablesToClear = ['product_catalog', 'product', 'customer', 'order', 'order_detail', 'customer_coupon'];
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  tablesToClear.forEach(t => {
+    const s = ss.getSheetByName(t);
+    if (s && s.getMaxRows() > 1) {
+      s.getRange(2, 1, s.getMaxRows() - 1, s.getMaxColumns()).clearContent();
+    }
+  });
+  
+  notifyDiscord("⚠️ แอดมินได้ทำการ **รีเซ็ตระบบข้อมูลทดสอบทั้งหมด** เรียบร้อยแล้ว!");
+  return { success: true };
+}
