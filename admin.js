@@ -762,6 +762,8 @@ let adminState = {
     document.getElementById('prod_image_url').value = '';
     if (document.getElementById('prod_image_file')) document.getElementById('prod_image_file').value = '';
     document.getElementById('img_preview').innerHTML = '';
+    document.getElementById('prod_active').checked = true;
+    document.getElementById('prod_hide_price').checked = false;
     document.getElementById('modal-product').classList.add('active');
   }
 
@@ -797,8 +799,8 @@ let adminState = {
       reader.onloadend = function() {
         Swal.showLoading();
         google.script.run.withSuccessHandler(res => {
-          if(!res.success) { Swal.fire('ข้อผิดพลาด', res.data || 'อัปโหลดรูปภาพไม่สำเร็จ', 'error'); return; }
-          document.getElementById('prod_image_url').value = res.data;
+          if(res && res.error) { Swal.fire('ข้อผิดพลาด', res.error || 'อัปโหลดรูปภาพไม่สำเร็จ', 'error'); return; }
+          document.getElementById('prod_image_url').value = res.data || res;
           submitProductData();
         }).uploadFileToDrive(reader.result, file.name);
       };
