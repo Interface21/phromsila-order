@@ -128,7 +128,7 @@ function uploadFileToDrive(base64Data, filename) {
     
     const file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return "https://lh3.googleusercontent.com/d/" + file.getId();
+    return "https://drive.google.com/uc?id=" + file.getId();
   } catch (e) {
     return { error: e.toString() };
   }
@@ -250,11 +250,14 @@ function getProducts() {
     if (p.image && typeof p.image === 'string') {
       const ucMatch = p.image.match(/uc\?id=([^&]+)/);
       const viewMatch = p.image.match(/\/d\/([^\/]+)\/view/);
+      const lh3Match = p.image.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
       
       if (ucMatch) {
         p.image = `https://drive.google.com/thumbnail?id=${ucMatch[1]}&sz=w1000`;
       } else if (viewMatch) {
         p.image = `https://drive.google.com/thumbnail?id=${viewMatch[1]}&sz=w1000`;
+      } else if (lh3Match) {
+        p.image = `https://drive.google.com/thumbnail?id=${lh3Match[1]}&sz=w1000`;
       }
     }
   });
