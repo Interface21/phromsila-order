@@ -38,8 +38,8 @@ let state = {
       
       const btnRewards = document.getElementById('btnMyRewards');
       if (btnRewards) {
-        const reqCount = state.config ? parseInt(state.config.delivery_count || 10) : 10;
-        const couponValue = state.config ? parseInt(state.config.coupon_discount || 20) : 20;
+        const reqCount = state.config && state.config.delivery_count !== undefined && state.config.delivery_count !== "" ? parseInt(state.config.delivery_count) : 10;
+        const couponValue = state.config && state.config.coupon_discount !== undefined && state.config.coupon_discount !== "" ? parseInt(state.config.coupon_discount) : 20;
         if (reqCount > 0 && couponValue > 0) {
           btnRewards.classList.remove('d-none');
         } else {
@@ -362,7 +362,7 @@ let state = {
 
   function renderRewardsModal() {
     if (!state.customer || !state.config) return;
-    const reqCount = parseInt(state.config.delivery_count || 10);
+    const reqCount = state.config && state.config.delivery_count !== undefined && state.config.delivery_count !== "" ? parseInt(state.config.delivery_count) : 10;
     const discountAmt = parseFloat(state.config.coupon_discount || 0);
     
     const accumulate = parseInt(state.customer.delivery_count_accumulate || 0);
@@ -423,8 +423,8 @@ let state = {
     const select = document.getElementById('checkoutCouponSelect');
     if (!section || !select) return;
     
-    const reqCount = state.config ? parseInt(state.config.delivery_count || 10) : 10;
-    const couponValue = state.config ? parseInt(state.config.coupon_discount || 20) : 20;
+    const reqCount = state.config && state.config.delivery_count !== undefined && state.config.delivery_count !== "" ? parseInt(state.config.delivery_count) : 10;
+    const couponValue = state.config && state.config.coupon_discount !== undefined && state.config.coupon_discount !== "" ? parseInt(state.config.coupon_discount) : 20;
     
     if (reqCount === 0 || couponValue === 0) {
       section.classList.add('d-none');
@@ -546,8 +546,8 @@ let state = {
         }
         
         // Hide coupons if disabled
-        const reqCount = state.config ? parseInt(state.config.delivery_count || 10) : 10;
-        const couponValue = state.config ? parseInt(state.config.coupon_discount || 20) : 20;
+        const reqCount = state.config && state.config.delivery_count !== undefined && state.config.delivery_count !== "" ? parseInt(state.config.delivery_count) : 10;
+        const couponValue = state.config && state.config.coupon_discount !== undefined && state.config.coupon_discount !== "" ? parseInt(state.config.coupon_discount) : 20;
         const menuRewards = document.getElementById('menuRewards');
         if (reqCount === 0 || couponValue === 0) {
           if (menuRewards) menuRewards.classList.add('d-none');
@@ -693,6 +693,7 @@ let state = {
       let promoBadge = '';
       if (isPromo && p.promo_expire) {
         const expireDate = new Date(p.promo_expire);
+        expireDate.setHours(23, 59, 59, 999);
         const diffTime = expireDate - now;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
