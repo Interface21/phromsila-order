@@ -466,12 +466,12 @@
         <input type="number" id="prod_promo_price" class="input-control" value="0">
       </div>
     </div>
-    <div class="input-group mt-2">
-      <label style="display:block; margin-bottom:5px;">ปิดการแสดงราคา (ตามตกลง)</label>
-      <label class="switch">
+    <div class="input-group mt-2" style="display:flex; align-items:center; gap:10px; flex-direction:row;">
+      <label class="switch" style="margin-bottom:0;">
         <input type="checkbox" id="prod_hide_price">
         <span class="slider"></span>
       </label>
+      <label for="prod_hide_price" style="margin-bottom:0; cursor:pointer;">ปิดการแสดงราคา (ตามตกลง)</label>
     </div>
     <div class="input-group mt-2">
       <label>วันที่สิ้นสุดโปรโมชั่น (เว้นว่างได้)</label>
@@ -483,12 +483,12 @@
       <input type="hidden" id="prod_image_url">
       <div id="img_preview" style="margin-top:10px; max-width:100px;"></div>
     </div>
-    <div class="input-group mt-2">
-      <label style="display:block; margin-bottom:5px;">สถานะ</label>
-      <label class="switch">
+    <div class="input-group mt-2" style="display:flex; align-items:center; gap:10px; flex-direction:row;">
+      <label class="switch" style="margin-bottom:0;">
         <input type="checkbox" id="prod_active" checked>
         <span class="slider"></span>
       </label>
+      <label for="prod_active" style="margin-bottom:0; cursor:pointer;">แสดงสินค้าหน้าร้าน (เปิด/ปิด ให้ลูกค้าเห็น)</label>
     </div>
     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
       <button class="btn btn-glass" onclick="closeModal('modal-product')">ยกเลิก</button>
