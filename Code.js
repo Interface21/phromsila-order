@@ -345,6 +345,13 @@ function getProducts() {
       }
     }
   });
+  
+  products.sort((a, b) => {
+    const nameA = a.name ? String(a.name) : '';
+    const nameB = b.name ? String(b.name) : '';
+    return nameA.localeCompare(nameB, 'th');
+  });
+  
   return { success: true, data: products };
 }
 
