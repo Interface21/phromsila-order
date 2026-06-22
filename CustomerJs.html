@@ -101,14 +101,24 @@
   }
 
   function handleRegister() {
+    const btn = document.getElementById('btnCustomerRegister') || document.querySelector('button[onclick="handleRegister()"]');
+    if (btn) {
+      if (btn.disabled) return;
+      btn.disabled = true;
+    }
+
     const name = document.getElementById('regName').value.trim();
     const phone = document.getElementById('regPhone').value.trim();
     const address = document.getElementById('regAddress').value.trim();
     
-    if (!name || !phone || !address) return showAlert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วน (ชื่อ, เบอร์โทรศัพท์, ที่อยู่)', 'error');
+    if (!name || !phone || !address) {
+      if (btn) btn.disabled = false;
+      return showAlert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วน (ชื่อ, เบอร์โทรศัพท์, ที่อยู่)', 'error');
+    }
     
     Swal.fire({title: 'กำลังประมวลผล', text: 'กรุณารอสักครู่...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
     google.script.run.withSuccessHandler(res => {
+      if (btn) btn.disabled = false;
       Swal.close();
       if (res.success) {
         state.customer = res.data;
@@ -116,7 +126,7 @@
         updateAuthUI();
         switchView('view-home');
       } else {
-        showAlert('ข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้', 'error');
+        showAlert('ข้อผิดพลาด', res.message || 'ไม่สามารถลงทะเบียนได้', 'error');
       }
     }).saveCustomer({ name: name, mobile_no: phone, delivery_address: address, active: true });
   }

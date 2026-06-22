@@ -395,8 +395,10 @@ function getCustomers() {
 
 function saveCustomer(data) {
   const sheet = getSheet('customer');
-  const rowIndex = data.id ? findRowIndex(sheet, data.id, 0) : -1;
   const safePhone = data.mobile_no ? "'" + data.mobile_no.toString().replace(/^'/, '') : "";
+  const cleanMobile = data.mobile_no ? data.mobile_no.toString().replace(/^'/, '') : "";
+  const rowIndex = data.id ? findRowIndex(sheet, data.id, 0) : -1;
+  
   if (rowIndex > -1) {
       sheet.getRange(rowIndex, 2, 1, 6).setValues([[
         data.name, safePhone, data.delivery_address,
@@ -404,6 +406,12 @@ function saveCustomer(data) {
       ]]);
       notifyDiscord("👤 แอดมินแก้ไขข้อมูลลูกค้า: " + data.name);
   } else {
+    // Check for duplicate phone
+    const existing = getSheetDataAsObjects('customer').find(c => (c.mobile_no || "").toString().replace(/^'/, '') === cleanMobile);
+    if (existing) {
+        return { success: false, message: "มีเบอร์โทรศัพท์นี้ในระบบแล้ว" };
+    }
+    
     data.id = getUuid();
     appendRowSafely(sheet, [
       data.id, data.name, safePhone, data.delivery_address,
