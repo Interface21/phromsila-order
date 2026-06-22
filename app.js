@@ -1114,7 +1114,8 @@ let state = {
       coupon_discount: couponDiscount,
       used_coupon_id: usedCouponId,
       net_total: netTotal,
-      pos_order_ref: ''
+      pos_order_ref: '',
+      remark: document.getElementById('orderRemark') ? document.getElementById('orderRemark').value.trim() : ''
     };
     
     Swal.fire({

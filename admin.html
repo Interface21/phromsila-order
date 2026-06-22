@@ -746,13 +746,208 @@
     </div>
     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
       <button class="btn btn-glass" onclick="closeModal('modal-customer')">ยกเลิก</button>
+    </div>
+    <div class="glass-panel mt-2" style="padding:20px;">
+      <table class="glass-table">
+        <thead><tr><th>ชื่อลูกค้า</th><th>เบอร์โทรศัพท์</th><th>ยอดสะสม (ครั้ง)</th><th>แต้มคงเหลือ</th><th>จัดการ</th></tr></thead>
+        <tbody id="couponTableBody"></tbody>
+      </table>
+      <div id="couponPagination" style="margin-top:20px; display:flex; justify-content:center; gap:5px;"></div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="view-config" class="view-section">
+    <h2>ตั้งค่าระบบ</h2>
+    <div class="glass-panel mt-2" style="padding:30px; max-width:600px;">
+      <div class="input-group">
+        <label>ชื่อร้าน</label>
+        <input type="text" id="cfg_shop_name" class="input-control">
+      </div>
+      <div class="input-group">
+        <label>เบอร์โทรศัพท์ร้าน</label>
+        <input type="text" id="cfg_mobile_no" class="input-control">
+      </div>
+      <div class="input-group">
+        <label>Line ID</label>
+        <input type="text" id="cfg_line_id" class="input-control">
+      </div>
+      <div class="input-group" style="display:flex; gap:15px;">
+        <div style="flex:1;">
+          <label>ค่าจัดส่ง (บาท)</label>
+          <input type="number" id="cfg_delivery_charge" class="input-control">
+        </div>
+        <div style="flex:1;">
+          <label>ยอดสั่งซื้อขั้นต่ำที่ส่งฟรี (บาท)</label>
+          <input type="number" id="cfg_free_delivery_threshold" class="input-control">
+        </div>
+      </div>
+      <div class="input-group" style="display:flex; gap:15px; margin-top:15px;">
+        <div style="flex:1;">
+          <label>สะสมจัดส่งครบ (ครั้ง)</label>
+          <input type="number" id="cfg_delivery_count" class="input-control" placeholder="เช่น 10">
+        </div>
+        <div style="flex:1;">
+          <label>มูลค่าคูปองที่ได้ (บาท)</label>
+          <input type="number" id="cfg_coupon_discount" class="input-control" placeholder="เช่น 20">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>วันหยุดประจำสัปดาห์</label>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; padding: 10px; background: #f8fafc; border: 1px solid #94a3b8; border-radius: 8px;" id="cfg_close_days_container">
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="0" class="chk-close-day"> อาทิตย์</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="1" class="chk-close-day"> จันทร์</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="2" class="chk-close-day"> อังคาร</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="3" class="chk-close-day"> พุธ</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="4" class="chk-close-day"> พฤหัสบดี</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="5" class="chk-close-day"> ศุกร์</label>
+          <label style="display:flex; align-items:center; gap:5px; font-weight:normal; margin-bottom:0; cursor:pointer;"><input type="checkbox" value="6" class="chk-close-day"> เสาร์</label>
+        </div>
+      </div>
+      <hr style="margin:20px 0; border:none; border-top:1px solid rgba(0,0,0,0.1)">
+      <h4>เปลี่ยนรหัสผ่านแอดมิน</h4>
+      <div class="input-group mt-1">
+        <input type="password" id="cfg_new_pwd" class="input-control" placeholder="เว้นว่างไว้หากไม่ต้องการเปลี่ยน">
+      </div>
+      <button class="btn btn-primary mt-2" onclick="saveConfig()">บันทึกการตั้งค่า</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modals -->
+
+<!-- Catalog Modal -->
+<div class="custom-modal" id="modal-catalog" onclick="if(event.target === this) closeModal(this.id)">
+  <div class="glass-panel modal-content">
+    <h3>รายละเอียดหมวดหมู่</h3>
+    <input type="hidden" id="cat_id">
+    <div class="input-group mt-2">
+      <label>ชื่อหมวดหมู่ <span style="color:red;">*</span></label>
+      <input type="text" id="cat_name" class="input-control">
+    </div>
+    <div class="input-group mt-2">
+      <label style="display:block; margin-bottom:5px;">สถานะ</label>
+      <label class="switch">
+        <input type="checkbox" id="cat_active" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+      <button class="btn btn-glass" onclick="closeModal('modal-catalog')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveCatalog()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Modal -->
+<div class="custom-modal" id="modal-product" onclick="if(event.target === this) closeModal(this.id)">
+  <div class="glass-panel modal-content">
+    <h3>รายละเอียดสินค้า</h3>
+    <input type="hidden" id="prod_id">
+    
+    <div class="input-group mt-2">
+      <label>หมวดหมู่ <span style="color:red;">*</span></label>
+      <select id="prod_catalog_id" class="input-control"></select>
+    </div>
+    <div class="input-group">
+      <label>ชื่อสินค้า <span style="color:red;">*</span></label>
+      <input type="text" id="prod_name" class="input-control">
+    </div>
+    <div style="display:flex; gap:15px;">
+      <div class="input-group" style="flex:1;">
+        <label>ราคา <span style="color:red;">*</span></label>
+        <input type="number" id="prod_price" class="input-control">
+      </div>
+      <div class="input-group" style="flex:1;">
+        <label>ราคาโปรโมชั่น (ใส่ 0 หากไม่มี)</label>
+        <input type="number" id="prod_promo_price" class="input-control" value="0">
+      </div>
+    </div>
+    <div class="input-group mt-2">
+      <label>วันที่สิ้นสุดโปรโมชั่น (เว้นว่างได้)</label>
+      <input type="date" id="prod_promo_expire" class="input-control">
+    </div>
+    <div class="input-group">
+      <label>อัปโหลดรูปภาพ</label>
+      <input type="file" id="prod_image_file" class="input-control" accept="image/*">
+      <input type="hidden" id="prod_image_url">
+      <div id="img_preview" style="margin-top:10px; max-width:100px;"></div>
+    </div>
+    <div class="input-group mt-2">
+      <label style="display:block; margin-bottom:5px;">สถานะ</label>
+      <label class="switch">
+        <input type="checkbox" id="prod_active" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+      <button class="btn btn-glass" onclick="closeModal('modal-product')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveProduct()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="custom-modal" id="modal-order" onclick="if(event.target === this) closeModal(this.id)">
+  <div class="glass-panel modal-content" style="width: 780px; max-width: 95%; position: relative;">
+    <button onclick="closeModal('modal-order')" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); z-index: 20;"><i class="fas fa-times"></i></button>
+    <div style="position: sticky; top: -30px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 10; margin: -30px -30px 15px -30px; padding: 30px 30px 15px 30px; border-bottom: 1px solid rgba(0,0,0,0.05); border-radius: 15px 15px 0 0;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="ord_no" style="margin:0; margin-right: 30px;">รายละเอียดคำสั่งซื้อ</h3>
+        <div id="ord_status_badge" class="badge"></div>
+      </div>
+      <div class="mt-2" id="ord_info" style="font-size:0.9rem; color:var(--text-light);"></div>
+    </div>
+    <div id="ord_items" style="margin-bottom:15px;"></div>
+    <div style="font-weight:bold; font-size:1.2rem; text-align:right; margin-bottom:20px;" id="ord_total"></div>
+    
+    <div class="input-group">
+      <label>อัปเดตสถานะ</label>
+      <div style="display:flex; gap:5px; flex-wrap:wrap;">
+        <button id="btnStatus_order" class="btn btn-primary" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('order')"><i class="fas fa-clipboard-check fa-lg" style="margin-bottom:5px; display:block;"></i>รับคำสั่งซื้อ</button>
+        <button id="btnStatus_preparing_order" class="btn btn-primary" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('preparing_order')"><i class="fas fa-box-open fa-lg" style="margin-bottom:5px; display:block;"></i>จัดเตรียม</button>
+        <button id="btnStatus_preparing_shipment" class="btn btn-primary" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('preparing_shipment')"><i class="fas fa-motorcycle fa-lg" style="margin-bottom:5px; display:block;"></i>รอจัดส่ง/รับ</button>
+        <button id="btnStatus_shipped" class="btn btn-primary" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('shipped')"><i class="fas fa-check-circle fa-lg" style="margin-bottom:5px; display:block;"></i>เสร็จสิ้น</button>
+        <button id="btnStatus_cancel" class="btn btn-danger" style="flex:1; padding: 10px; font-size:0.9rem; border-radius:10px; line-height:1.4;" onclick="changeOrderStatus('cancel')"><i class="fas fa-times-circle fa-lg" style="margin-bottom:5px; display:block;"></i>ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Modal -->
+<div class="custom-modal" id="modal-customer" onclick="if(event.target === this) closeModal(this.id)">
+  <div class="glass-panel modal-content">
+    <h3>รายละเอียดลูกค้า</h3>
+    <input type="hidden" id="cust_id">
+    <div class="input-group mt-2">
+      <label>ชื่อลูกค้า <span style="color:red;">*</span></label>
+      <input type="text" id="cust_name" class="input-control">
+    </div>
+    <div class="input-group">
+      <label>เบอร์โทรศัพท์ <span style="color:red;">*</span></label>
+      <input type="text" id="cust_phone" class="input-control">
+    </div>
+    <div class="input-group">
+      <label>ที่อยู่จัดส่ง</label>
+      <textarea id="cust_address" class="input-control" rows="2"></textarea>
+    </div>
+    <div class="input-group mt-2">
+      <label style="display:block; margin-bottom:5px;">ระงับการใช้งาน</label>
+      <label class="switch">
+        <input type="checkbox" id="cust_banned">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+      <button class="btn btn-glass" onclick="closeModal('modal-customer')">ยกเลิก</button>
       <button class="btn btn-primary" onclick="saveCustomer()">บันทึก</button>
     </div>
   </div>
 </div>
 
   <script src="api.js?v=24"></script>
-  <script src="admin.js?v=39"></script>
+  <script src="admin.js?v=40"></script>
 
 </body>
 </html>

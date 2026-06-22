@@ -34,6 +34,7 @@ function doPost(e) {
       'updateOrderStatus': updateOrderStatus,
       'placeOrder': placeOrder,
       'removeOrderItem': removeOrderItem,
+      'updateOrderItemQty': updateOrderItemQty,
       'getCustomerCoupons': getCustomerCoupons,
       'redeemCoupon': redeemCoupon,
       'uploadFileToDrive': uploadFileToDrive,
@@ -570,7 +571,10 @@ function placeOrder(orderData, cartItems) {
     orderData.total,
     orderData.coupon_discount || 0,
     orderData.net_total,
-    "order" // initial status
+    "order", // initial status
+    "",
+    "",
+    orderData.remark || ""
   ]);
   
   cartItems.forEach(item => {
@@ -609,7 +613,7 @@ function placeOrder(orderData, cartItems) {
       custSheet.getRange(cRow, 5).setValue(currentAcc + 1);
     }
   }
-  notifyDiscord(`🛎️ มีคำสั่งซื้อใหม่: #${orderNo}\nลูกค้ารับสินค้าแบบ: ${orderData.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับเองที่ร้าน'}\nยอดรวม: ฿${orderData.total_amount}`);
+  notifyDiscord(`🛎️ มีคำสั่งซื้อใหม่: #${orderNo}\nลูกค้ารับสินค้าแบบ: ${orderData.pickup_type === 'delivery' ? 'จัดส่ง' : 'รับเองที่ร้าน'}\nยอดรวม: ฿${orderData.net_total}`);
   
   return { success: true, orderNo: orderNo };
 }
@@ -656,6 +660,64 @@ function removeOrderItem(orderId, detailId) {
     ]]);
     
     return { success: true, netTotal: netTotal, deliveryFee: deliveryFee, total: newTotal, feeChanged: originalFee === 0 && deliveryFee > 0 };
+  }
+  
+  return { success: false, message: 'Order not found' };
+}
+
+function updateOrderItemQty(orderId, detailId, change) {
+  const detailSheet = getSheet('order_detail');
+  const details = getSheetDataAsObjects('order_detail');
+  const detailIndex = details.findIndex(d => d.id === detailId && d.order_id === orderId);
+  if (detailIndex < 0) return { success: false, message: 'Detail not found' };
+  
+  const detail = details[detailIndex];
+  let newQty = parseInt(detail.quantity) + change;
+  if (newQty <= 0) return { success: false, message: 'Quantity cannot be zero or less. Use delete instead.' };
+  
+  const newTotalItem = newQty * parseFloat(detail.price);
+  
+  detailSheet.getRange(detail._rowIndex, 4, 1, 3).setValues([[
+    newQty, detail.price, newTotalItem
+  ]]);
+  
+  // Recalculate order total
+  details[detailIndex].quantity = newQty;
+  details[detailIndex].total = newTotalItem;
+  
+  const remainingDetails = details.filter(d => d.order_id === orderId);
+  const newTotal = remainingDetails.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
+  
+  const orderSheet = getSheet('order');
+  const orders = getSheetDataAsObjects('order');
+  const oIndex = orders.findIndex(o => o.id === orderId);
+  if (oIndex >= 0) {
+    const order = orders[oIndex];
+    let deliveryFee = parseFloat(order.delivery_fee || 0);
+    
+    if (order.pickup_type === 'delivery') {
+       const configRes = getConfig();
+       if (configRes.success) {
+         const config = configRes.data;
+         const threshold = parseFloat(config.free_delivery_threshold) || 200;
+         const charge = parseFloat(config.delivery_charge) || 20;
+         if (newTotal < threshold) {
+           deliveryFee = charge;
+         } else {
+           deliveryFee = 0;
+         }
+       }
+    }
+    
+    const couponDiscount = parseFloat(order.coupon_discount || 0);
+    const netTotal = newTotal + deliveryFee - couponDiscount;
+    
+    const row = order._rowIndex;
+    orderSheet.getRange(row, 9, 1, 4).setValues([[
+      deliveryFee, newTotal, couponDiscount, netTotal
+    ]]);
+    
+    return { success: true, netTotal: netTotal, deliveryFee: deliveryFee, total: newTotal };
   }
   
   return { success: false, message: 'Order not found' };

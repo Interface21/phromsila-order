@@ -370,6 +370,30 @@ let adminState = {
     });
   }
 
+  window.updateOrderItemQty = function(orderId, detailId, change) {
+    Swal.fire({title: 'กำลังอัปเดต...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+    google.script.run.withSuccessHandler(res => {
+      if(res.success) {
+        // Reload orders
+        google.script.run.withSuccessHandler(res2 => {
+          if (res2.success) {
+            adminState.orders = res2.data;
+            if (document.getElementById('view-orders').classList.contains('active')) {
+              renderOrders();
+            }
+            if (document.getElementById('view-dashboard').classList.contains('active')) {
+              renderDashboard();
+            }
+            openOrderModal(orderId);
+            Swal.close();
+          }
+        }).getOrders();
+      } else {
+        showAlert('ข้อผิดพลาด', res.message || 'ไม่สามารถอัปเดตจำนวนได้', 'error');
+      }
+    }).updateOrderItemQty(orderId, detailId, change);
+  }
+
   function getColorForStatus(s) {
     const map = {
       'order': '#4A90E2',
@@ -462,6 +486,7 @@ let adminState = {
           ลูกค้า: <strong>${custName}</strong> ${custPhone} <br>
           ${isDelivery ? 'ที่อยู่จัดส่ง: ' + (cust && cust.delivery_address ? cust.delivery_address : 'ไม่ระบุ') + '<br>' : ''}
           วิธีชำระเงิน: ${paymentText}
+          ${o.remark ? '<br><span style="color:#d97706; font-weight:bold;"><i class="fas fa-comment-dots"></i> หมายเหตุ: ' + o.remark + '</span>' : ''}
           ${o.status === 'cancel' && o.cancel_reason ? '<br><span style="color:#ef4444; font-weight:bold;"><i class="fas fa-exclamation-circle"></i> เหตุผลยกเลิก: ' + o.cancel_reason + '</span>' : ''}
         </div>
         <div style="display: flex; align-items: center; justify-content: center; gap: 15px; background: rgba(0,0,0,0.02); padding: 15px; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">
@@ -482,7 +507,18 @@ let adminState = {
       const canDelete = o.status !== 'shipped' && o.status !== 'cancel';
       const delBtn = canDelete ? `<button style="background: transparent; padding: 4px 8px; font-size: 0.9rem; border-radius: 6px; border: none; cursor: pointer; color: #94a3b8; transition: all 0.2s;" onmouseover="this.style.color='#ef4444'; this.style.background='#fee2e2';" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent';" onclick="removeOrderItem('${o.id}', '${item.id}', '${p ? p.name : '(สินค้านี้ถูกลบแล้ว)'}')" title="ลบรายการนี้"><i class="fas fa-trash-alt"></i></button>` : '';
       
-      itemsHtml += `<tr><td style="text-align:center;">${delBtn}</td><td>${p ? p.name : '(สินค้านี้ถูกลบแล้ว)'}</td><td>${item.quantity} ${unit}</td><td style="text-align:right;">฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
+      let qtyHtml = `${item.quantity} ${unit}`;
+      if (canDelete) {
+        qtyHtml = `
+          <div style="display:inline-flex; align-items:center; gap:8px;">
+            <button class="btn btn-glass" style="padding: 2px 6px; min-width: 24px; height: 24px; line-height: 1;" onclick="updateOrderItemQty('${o.id}', '${item.id}', -1)">-</button>
+            <span style="min-width: 20px; text-align: center; font-weight: bold;">${item.quantity}</span>
+            <button class="btn btn-glass" style="padding: 2px 6px; min-width: 24px; height: 24px; line-height: 1;" onclick="updateOrderItemQty('${o.id}', '${item.id}', 1)">+</button>
+          </div>
+        `;
+      }
+      
+      itemsHtml += `<tr><td style="text-align:center;">${delBtn}</td><td>${p ? p.name : '(สินค้านี้ถูกลบแล้ว)'}</td><td>${qtyHtml}</td><td style="text-align:right;">฿${parseFloat(item.total).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>`;
     });
     itemsHtml += '</tbody></table>';
     
