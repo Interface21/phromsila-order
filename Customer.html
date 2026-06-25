@@ -195,6 +195,11 @@
 
   <!-- ================= LOGIN VIEW ================= -->
   <div id="view-login" class="view-section glass-panel" style="margin: 20px; padding: 30px; text-align: center; margin-top: 20vh;">
+    <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.88rem; line-height: 1.5; text-align: center; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
+      <div style="font-weight: 700; color: #fef08a; margin-bottom: 4px; font-size: 1rem;"><i class="fas fa-rocket"></i> แจ้งย้ายเว็บไซต์ใหม่</div>
+      เราได้ย้ายเว็บไซต์ไปที่ระบบใหม่เพื่อเพิ่มความรวดเร็วและประสิทธิภาพที่ดียิ่งขึ้นค่ะ
+      <a href="https://phromsila-shop.netlify.app/" style="display: block; margin-top: 10px; background: #fef08a; color: #1e3a8a; padding: 8px 15px; border-radius: 25px; text-decoration: none; font-weight: 700; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">กดเพื่อไปเว็บไซต์ใหม่ที่นี่</a>
+    </div>
     <h2 style="margin-bottom: 20px; color: var(--primary);">ยินดีต้อนรับสู่<br>Phromsila Shop</h2>
     <div class="input-group">
       <input type="tel" id="loginPhone" class="input-control" placeholder="เบอร์โทรศัพท์" maxlength="10">
@@ -205,6 +210,11 @@
 
   <!-- ================= REGISTER VIEW ================= -->
   <div id="view-register" class="view-section glass-panel" style="margin: 20px; padding: 30px;">
+    <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.88rem; line-height: 1.5; text-align: center; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
+      <div style="font-weight: 700; color: #fef08a; margin-bottom: 4px; font-size: 1rem;"><i class="fas fa-rocket"></i> แจ้งย้ายเว็บไซต์ใหม่</div>
+      เราได้ย้ายเว็บไซต์ไปที่ระบบใหม่เพื่อเพิ่มความรวดเร็วและประสิทธิภาพที่ดียิ่งขึ้นค่ะ
+      <a href="https://phromsila-shop.netlify.app/" style="display: block; margin-top: 10px; background: #fef08a; color: #1e3a8a; padding: 8px 15px; border-radius: 25px; text-decoration: none; font-weight: 700; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">กดเพื่อไปเว็บไซต์ใหม่ที่นี่</a>
+    </div>
     <h3 style="margin-bottom: 20px; text-align: center;">ลงทะเบียนลูกค้าใหม่</h3>
     <div class="input-group">
       <label>ชื่อ - นามสกุล</label>
@@ -227,6 +237,18 @@
   <!-- ================= HOME VIEW ================= -->
   <div id="view-home" class="view-section active">
     <div class="header">
+      <!-- Migration Notice Banner -->
+      <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 18px 20px; border-radius: 16px; margin-bottom: 18px; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); text-align: center; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <div style="font-weight: 700; font-size: 1.15rem; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fef08a;">
+          <i class="fas fa-rocket fa-bounce" style="--fa-animation-duration: 2s;"></i> แจ้งย้ายเว็บไซต์ร้านพร้อมศิลาใหม่
+        </div>
+        <p style="font-size: 0.92rem; line-height: 1.5; margin-bottom: 15px; color: #f1f5f9;">
+          เรียนคุณลูกค้าทุกท่าน เพื่อยกระดับประสบการณ์การสั่งซื้อให้รวดเร็วทันใจ ป้องกันปัญหาเว็บโหลดช้าหรือค้าง และเพิ่มประสิทธิภาพระบบที่เสถียรยิ่งขึ้น ทางร้านได้ย้ายไปให้บริการที่เว็บไซต์ใหม่แล้วค่ะ
+        </p>
+        <a href="https://phromsila-shop.netlify.app/" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #fef08a, #eab308); color: #1e293b; font-weight: 700; padding: 12px 24px; border-radius: 30px; text-decoration: none; font-size: 1rem; box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4); transition: all 0.3s ease; width: 100%; max-width: 320px;">
+          <span>กดเพื่อย้ายไปเว็บไซต์ใหม่</span> <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
       <!-- Shop Info Banner -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px;">
         <h2 id="displayShopName" style="margin: 0; color: var(--primary); font-size: 1.3rem; cursor: pointer;" onclick="switchView('view-home')">Phromsila Shop</h2>
@@ -388,6 +410,44 @@
 </div>
 
 <?!= include('CustomerJs'); ?>
+
+  <!-- Migration Popup Notice -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            title: '<span style="color: #1e3a8a; font-weight: 700;"><i class="fas fa-rocket" style="color: #eab308;"></i> แจ้งย้ายเว็บไซต์ใหม่</span>',
+            html: `
+              <div style="text-align: left; font-size: 0.95rem; line-height: 1.6; color: #334155; padding: 5px 0;">
+                <p style="margin-bottom: 12px;">เรียนคุณลูกค้าทุกท่าน <b>ร้านพร้อมศิลา (Phromsila Shop)</b> ได้ทำการพัฒนาระบบและย้ายที่อยู่เว็บไซต์ในการสั่งซื้อสินค้าใหม่แล้วนะคะ</p>
+                <div style="background: #f8fafc; border-left: 4px solid #2563eb; padding: 12px 14px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-left-width: 4px;">
+                  <b style="color: #1e40af; display: block; margin-bottom: 4px;"><i class="fas fa-check-circle text-primary"></i> เหตุผลที่ย้ายไปเว็บไซต์ใหม่:</b>
+                  <ul style="margin: 5px 0 0 20px; padding: 0; font-size: 0.9rem; color: #475569;">
+                    <li>เพิ่มความรวดเร็วในการโหลดหน้าเว็บ</li>
+                    <li>ระบบสั่งซื้อเสถียร แม่นยำ และปลอดภัยยิ่งขึ้น</li>
+                    <li>รองรับการใช้งานบนมือถือได้ลื่นไหลไม่มีค้าง</li>
+                  </ul>
+                </div>
+                <p style="margin-bottom: 0; color: #dc2626; font-weight: 600; text-align: center;">กรุณากดปุ่มด้านล่างเพื่อเข้าสู่เว็บไซต์ใหม่ได้ทันทีค่ะ</p>
+              </div>
+            `,
+            confirmButtonText: '<i class="fas fa-external-link-alt"></i> ย้ายไปเว็บไซต์ใหม่ https://phromsila-shop.netlify.app/',
+            confirmButtonColor: '#2563eb',
+            showCancelButton: true,
+            cancelButtonText: 'ปิดแจ้งเตือน (ดูเว็บเดิม)',
+            cancelButtonColor: '#94a3b8',
+            allowOutsideClick: false,
+            width: '480px'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = 'https://phromsila-shop.netlify.app/';
+            }
+          });
+        }
+      }, 500);
+    });
+  </script>
 
 </body>
 </html>
