@@ -4,166 +4,496 @@
   <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Phromsila Shop - ย้ายเว็บไซต์ใหม่</title>
+  <title>Phromsila Shop</title>
   <link rel="icon" type="image/png" href="phromsila-logo.png?v=2">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="style.css?v=2">
   <style>
     /* ซ่อนแถบ Google Apps Script (ถ้าเป็นไปได้) */
     .disclaimer, div[style*="z-index: 1000000"], div[style*="z-index: 2147483647"] { display: none !important; }
     
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 20px;
+    /* Mobile App Specific Styles */
+    body { padding-bottom: 80px; }
+    
+    .app-container {
+      width: 100%;
+      margin: 0 auto;
       min-height: 100vh;
+      position: relative;
+    }
+    @media (min-width: 1024px) {
+      .app-container {
+        max-width: 500px;
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      }
+    }
+    
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(243, 244, 246, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 0 0 15px 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      padding: 15px 20px 10px 20px;
+      margin-bottom: 20px;
+    }
+    
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.8);
+      border-radius: 20px;
+      padding: 8px 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .search-bar input {
+      border: none;
+      background: transparent;
+      outline: none;
+      flex-grow: 1;
+      padding-left: 10px;
+    }
+    
+    /* Category Badges */
+    .category-scroll {
+      display: flex;
+      overflow-x: auto;
+      padding: 10px 20px;
+      gap: 10px;
+      scrollbar-width: none;
+    }
+    .category-scroll::-webkit-scrollbar { display: none; }
+    
+    .cat-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .cat-badge.active { background: var(--primary); color: white; }
+    
+    /* Product List */
+    .product-list { 
+      padding: 0 20px; 
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .product-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .product-card {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      gap: 15px;
+      position: relative;
+      height: 100%;
+    }
+    
+    .product-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #eee;
+    }
+    
+    .product-info { flex-grow: 1; }
+    .product-title { font-weight: 400; font-size: 1rem; margin-bottom: 5px; }
+    .product-price { color: var(--primary); font-weight: 500; }
+    .promo-price { color: var(--danger); font-weight: 500; }
+    .old-price { text-decoration: line-through; color: var(--text-light); font-size: 0.8rem; }
+    
+    .add-to-cart-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-      font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+      padding: 0;
+      background: #e11d48;
+      color: white;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(225, 29, 72, 0.3);
     }
-
-    .migration-card {
-      width: 100%;
-      max-width: 500px;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(20px);
-      border-radius: 28px;
-      box-shadow: 0 25px 60px rgba(30, 58, 138, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      overflow: hidden;
-      text-align: center;
-      padding: 45px 35px;
-      animation: fadeIn 0.4s ease-out;
+    
+    /* Floating Cart */
+    .floating-cart {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 460px;
+      background: rgba(74, 144, 226, 0.9);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(74, 144, 226, 0.4);
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      transition: 0.3s;
     }
-
+    .floating-cart:hover { transform: translateX(-50%) scale(1.02); }
+    
+    /* View Classes */
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.3s; }
+    
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    .logo-area {
-      margin-bottom: 25px;
-    }
-    .logo-area img {
-      height: 80px;
-      filter: drop-shadow(0 6px 15px rgba(0,0,0,0.1));
-    }
-
-    .title {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #1e3a8a;
-      margin-bottom: 12px;
+    
+    .qty-control {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
+      gap: 15px;
     }
-
-    .subtitle {
-      font-size: 1.05rem;
-      color: #475569;
-      line-height: 1.6;
-      margin-bottom: 30px;
-    }
-
-    .reasons-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 18px;
-      padding: 22px 25px;
-      text-align: left;
-      margin-bottom: 35px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-    }
-
-    .reasons-box h4 {
-      margin: 0 0 14px 0;
-      color: #2563eb;
-      font-size: 1.05rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .reasons-box ul {
-      margin: 0;
-      padding-left: 22px;
-      color: #334155;
-      font-size: 0.95rem;
-      line-height: 1.8;
-    }
-
-    .reasons-box li::marker {
-      color: #3b82f6;
-    }
-
-    .action-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      width: 100%;
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    .qty-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: #e11d48;
       color: white;
-      font-size: 1.15rem;
-      font-weight: 700;
-      padding: 18px 30px;
-      border-radius: 50px;
-      text-decoration: none;
-      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
-      transition: all 0.3s ease;
+      font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(225, 29, 72, 0.3);
     }
-
-    .action-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 35px rgba(37, 99, 235, 0.45);
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    .qty-btn.outline {
+      background: white;
+      border: 1px solid #ccc;
+      color: var(--text-dark);
+      box-shadow: none;
     }
-
-    .footer-note {
-      margin-top: 25px;
-      font-size: 0.88rem;
-      color: #64748b;
-      word-break: break-all;
+    .cart-item {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      position: relative;
+    }
+    .cart-item-img {
+      width: 80px; height: 80px; border-radius: 12px; object-fit: cover; background: #eee; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 2rem;
+    }
+    .trash-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      color: var(--text-light);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
     }
   </style>
 </head>
 <body>
 
-  <div class="migration-card">
+<div class="app-container">
 
-    <div class="title">
-      <i class="fas fa-rocket" style="color: #eab308;"></i> แจ้งย้ายเว็บไซต์ใหม่
-    </div>
-
-    <div class="subtitle">
-      ร้านพรหมศิลา ได้ย้ายระบบสั่งซื้อสินค้าไปยังเว็บไซต์ใหม่แล้วค่ะ
-    </div>
-
-    <div class="reasons-box">
-      <h4><i class="fas fa-check-circle"></i> เหตุผลที่พัฒนาระบบใหม่:</h4>
-      <ul>
-        <li><b>โหลดเว็บได้รวดเร็วทันใจ</b> ไม่ต้องรอโหลดข้อมูลนาน</li>
-        <li><b>ระบบสั่งซื้อเสถียรและแม่นยำยิ่งขึ้น</b> ทำรายการได้ราบรื่น</li>
-        <li><b>รองรับมือถือและแท็บเล็ตได้ลื่นไหล</b> ดีไซน์ใช้งานง่าย</li>
-        <li><b>ไม่ต้องเชื่อมต่อ Google Sheet</b> ปลอดภัยรวดเร็วกว่าเดิม</li>
-      </ul>
-    </div>
-
-    <a href="https://phromsila-shop.netlify.app/" class="action-btn">
-      <span>กดเพื่อไปเว็บไซต์ใหม่ทันที</span> <i class="fas fa-arrow-right"></i>
-    </a>
-
-    <div class="footer-note">
-      URL: https://phromsila-shop.netlify.app/
+  <!-- ================= LOGIN VIEW ================= -->
+  <div id="view-login" class="view-section" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9000; background:var(--bg-color); overflow:auto;">
+    <div style="display:flex; justify-content:center; align-items:center; min-height:100vh; padding:20px;">
+      <div class="glass-panel" style="width:100%; max-width:400px; padding:40px; text-align:center;">
+        <h2 style="margin-bottom: 20px; color: var(--primary);">ยินดีต้อนรับสู่<br><img src="phromsila-logo.png?v=1" style="height: 1.2em; vertical-align: middle; margin-right: 5px;" alt="Logo"> <span id="displayShopNameLogin">Phromsila Shop</span></h2>
+        <div class="input-group">
+          <input type="tel" id="loginPhone" class="input-control" placeholder="เบอร์โทรศัพท์" maxlength="10">
+        </div>
+        <button id="btnCustomerLogin" class="btn btn-primary w-100" onclick="handleLogin()">เข้าสู่ระบบ</button>
+        <button class="btn btn-glass w-100" onclick="switchView('view-home')" style="margin-top: 10px;">กลับสู่หน้าแรก</button>
+      </div>
     </div>
   </div>
+
+  <!-- ================= REGISTER VIEW ================= -->
+  <div id="view-register" class="view-section" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9000; background:var(--bg-color); overflow:auto;">
+    <div style="display:flex; justify-content:center; align-items:center; min-height:100vh; padding:20px;">
+      <div class="glass-panel" style="width:100%; max-width:400px; padding:30px;">
+        <h3 style="margin-bottom: 20px; text-align: center;">ลงทะเบียนลูกค้าใหม่</h3>
+        <div class="input-group">
+          <label>ชื่อ - นามสกุล</label>
+          <input type="text" id="regName" class="input-control" placeholder="ชื่อของคุณ">
+        </div>
+        <div class="input-group">
+          <label>เบอร์โทรศัพท์</label>
+          <input type="tel" id="regPhone" class="input-control" readonly>
+        </div>
+        <div class="input-group">
+          <label>ที่อยู่สำหรับจัดส่ง</label>
+          <textarea id="regAddress" class="input-control" rows="3" placeholder="รายละเอียดที่อยู่จัดส่ง"></textarea>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary w-100" onclick="switchView('view-home')" style="background-color: #6c757d;">ยกเลิก</button>
+          <button id="btnCustomerRegister" class="btn btn-primary w-100" onclick="handleRegister()">บันทึก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= HOME VIEW ================= -->
+  <div id="view-home" class="view-section active">
+    <div class="header">
+      <!-- Shop Info Banner -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px;">
+        <h2 style="margin: 0; color: var(--primary); font-size: 1.3rem; cursor: pointer; display: flex; align-items: center;" onclick="switchView('view-home')"><img src="phromsila-logo.png?v=1" style="height: 1.5em; margin-right: 8px;" alt="Logo"> <span id="displayShopName">Phromsila Shop</span></h2>
+        <div style="display: flex; gap: 15px; font-size: 0.9rem; font-weight: 500;">
+          <a id="linkShopPhone" href="#" style="color: var(--text-dark); text-decoration: none; display: flex; align-items: center;">
+            <i class="fas fa-phone-alt" style="color: var(--primary); font-size: 1.2rem;"></i> <span id="displayShopPhone" class="d-none"></span>
+          </a>
+          <a id="linkShopLine" href="#" target="_blank" style="color: var(--text-dark); text-decoration: none; display: flex; align-items: center;">
+            <i class="fab fa-line" style="color: #00B900; font-size: 1.4rem;"></i> <span id="displayShopLine" class="d-none"></span>
+          </a>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3>สวัสดี <span id="userNameDisplay">คุณลูกค้า</span></h3>
+        <div style="display:flex; gap:10px;">
+          <div style="position: relative;" class="d-none" id="notificationBellContainer">
+            <button class="btn btn-glass" onclick="toggleNotifications()" style="padding: 5px 10px;" title="การแจ้งเตือน">
+              <i class="fas fa-bell" style="color:var(--primary);"></i>
+              <span id="notificationBadge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; display: none;">0</span>
+            </button>
+            <div id="notificationDropdown" class="glass-panel d-none" style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; max-height: 70vh; overflow-y: auto; z-index: 3000; padding: 20px; background: #ffffff; border: none; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; position: sticky; top: -20px; background: #ffffff; z-index: 10; margin-top: -20px; padding-top: 20px; border-radius: 12px 12px 0 0;">
+                 <h3 style="margin: 0; color: var(--text-dark); font-size: 1.1rem;"><i class="fas fa-bell text-primary"></i> การแจ้งเตือน</h3>
+                 <button class="btn btn-glass" onclick="toggleNotifications()" style="padding: 5px 10px;"><i class="fas fa-times"></i></button>
+               </div>
+               <div id="notificationList" style="display:flex; flex-direction:column; gap:8px;">
+                 <div style="text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 10px;">ไม่มีแจ้งเตือนใหม่</div>
+               </div>
+            </div>
+          </div>
+          <button id="btnMyRewards" class="btn btn-glass d-none" onclick="toggleRewardsModal()" style="padding: 5px 10px; font-weight: normal; color: #8b5cf6;" title="สิทธิพิเศษและคูปอง">
+            <i class="fas fa-gift"></i>
+          </button>
+          <button id="btnMyOrders" class="btn btn-glass d-none" onclick="switchView('view-tracking')" style="padding: 5px 10px; font-weight: normal;" title="ออเดอร์ของฉัน">
+            <span id="activeOrdersText"></span> <i class="fas fa-truck-fast"></i>
+          </button>
+          <button id="btnLogout" class="btn btn-danger d-none" onclick="handleLogout()" style="padding: 5px 10px;" title="ออกจากระบบ"><i class="fas fa-sign-out-alt"></i></button>
+          <button id="btnLogin" class="btn btn-primary" onclick="switchView('view-login')" style="padding: 5px 10px;" title="เข้าสู่ระบบ"><i class="fas fa-sign-in-alt"></i></button>
+        </div>
+      </div>
+      <!-- Dynamic Search & Category Row -->
+      <div style="display:flex; gap:10px; margin-top: 15px; align-items:center;">
+        
+        <!-- Default State: Category Selectbox + Search Button -->
+        <select id="categorySelect" class="input-control" style="margin-bottom:0; height:45px; border-radius:30px; padding: 0 20px; cursor:pointer; flex-grow: 1; transition: all 0.3s ease; box-shadow: var(--glass-shadow); border: 1px solid rgba(255,255,255,0.4);" onchange="setCategory(this.value)">
+          <option value="all">ทุกหมวดหมู่</option>
+        </select>
+        
+        <button id="btnOpenSearch" class="btn btn-glass" style="height:45px; border-radius:30px; padding:0 20px; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; border:1px solid rgba(0,0,0,0.1); color: var(--text-dark);" onclick="toggleSearchMode(true)">
+          <i class="fas fa-search"></i> <span>ค้นหาสินค้า</span>
+        </button>
+
+        <!-- Search Mode: Category Button + Search Input -->
+        <button id="btnOpenCat" class="btn btn-primary d-none" style="height:45px; border-radius:30px; padding:0 15px; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;" onclick="toggleSearchMode(false)">
+          <i class="fas fa-layer-group"></i> <span>หมวดหมู่</span>
+        </button>
+
+        <div id="searchWrapper" class="d-none" style="position:relative; flex-grow:1;">
+          <i class="fas fa-search" style="position:absolute; left:15px; top:15px; color:var(--text-light);"></i>
+          <input type="text" id="searchInput" class="input-control" placeholder="ค้นหาสินค้า..." onkeyup="filterProducts()" style="margin-bottom:0; height:45px; border-radius:30px; padding-left:40px; padding-right:40px; width:100%; box-shadow: var(--glass-shadow); border: 1px solid rgba(255,255,255,0.4);">
+          <i class="fas fa-times" style="position:absolute; right:15px; top:15px; color:var(--text-light); cursor:pointer;" onclick="toggleSearchMode(false); document.getElementById('searchInput').value=''; filterProducts();"></i>
+        </div>
+
+      </div>
+    </div>
+    
+    <!-- Shop Closed Banner -->
+    <div id="shopClosedBanner" class="d-none" style="background-color:#fee2e2; border:1px solid #f87171; color:#b91c1c; padding:10px 15px; margin-bottom:15px; text-align:center; border-radius:8px; font-size:0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+      <strong style="display:block; margin-bottom:2px; font-size:0.95rem;">วันนี้ร้านปิดทำการ</strong>
+      ท่านสามารถเรียกดูสินค้าได้ แต่ระบบจะไม่เปิดรับคำสั่งซื้อในขณะนี้ ขออภัยในความไม่สะดวกค่ะ
+    </div>
+
+    <div class="product-list" id="productContainer">
+      <!-- Products rendered here via JS -->
+      <div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+    </div>
+  </div>
+
+  <!-- ================= CART & CHECKOUT VIEW ================= -->
+  <div id="view-checkout" class="view-section" style="padding: 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <button class="btn btn-glass" onclick="switchView('view-home')"><i class="fas fa-arrow-left"></i></button>
+        <h2 style="margin: 0;">ตะกร้าสินค้า</h2>
+      </div>
+      <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9rem; border-radius: 8px; border:none; background:#ef4444; color:white; cursor:pointer;" onclick="clearCart()" id="btnClearCart">
+        <i class="fas fa-trash-alt"></i> ล้างทั้งหมด
+      </button>
+    </div>
+    
+    <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;" id="cartItemsContainer">
+      <!-- Cart items -->
+    </div>
+    
+    <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;">
+      <h4>รูปแบบการรับสินค้า</h4>
+      <div class="input-group mt-1">
+        <select id="pickupType" class="input-control" onchange="calculateTotal()">
+          <option value="delivery">จัดส่งถึงที่</option>
+          <option value="shop">รับที่ร้าน</option>
+        </select>
+        <div id="lateDeliveryWarning" class="d-none" style="color:#ef4444; font-size:0.85rem; margin-top:5px; font-weight:500;">
+          <i class="fas fa-info-circle"></i> ไม่สามารถจัดส่งในรอบสุดท้าย (15.00 น.) ได้ ต้องรับที่ร้านเท่านั้น
+        </div>
+      </div>
+      
+      <div id="pickupTimeSection">
+        <h4>รอบจัดส่ง/รับสินค้า</h4>
+        <div class="input-group mt-1">
+          <select id="pickupTime" class="input-control">
+            <option value="09:00">09:00</option>
+            <option value="11:00">11:00</option>
+            <option value="13:00">13:00</option>
+            <option value="15:00">15:00</option>
+          </select>
+          <small style="color: #ef4444; font-weight: bold;">* เลือกได้ก่อนเวลารอบอย่างน้อย 30 นาที</small>
+        </div>
+      </div>
+      
+      <div id="deliveryAddressSection" class="input-group mt-2">
+        <label>ที่อยู่จัดส่ง <span style="font-size:0.8rem; color:var(--text-light); font-weight:normal;">(สามารถแก้ไขเพื่อบันทึกเป็นที่อยู่ใหม่ได้)</span></label>
+        <textarea id="checkoutAddress" class="input-control" rows="2"></textarea>
+      </div>
+      
+      <h4 class="mt-2">วิธีชำระเงิน</h4>
+      <div class="input-group mt-1">
+        <select id="paymentType" class="input-control">
+          <option value="cash">เงินสด</option>
+          <option value="transfer_qr">โอน/คิวอาร์โค้ด(QR)</option>
+          <option value="credit">เครดิต</option>
+          <option value="thaiplus">โครงการรัฐ</option>
+        </select>
+      </div>
+      <div id="remarkSection" class="input-group mt-2">
+        <label>หมายเหตุ <span style="font-size:0.8rem; color:var(--text-light); font-weight:normal;">(ข้อความเพิ่มเติมถึงร้านค้า)</span></label>
+        <textarea id="orderRemark" class="input-control" rows="2" placeholder="เช่น รายละเอียดเพิ่มเติม, ข้อควรระวัง"></textarea>
+      </div>
+      <div id="checkoutCouponSection" class="input-group mt-2 d-none">
+        <h4 class="mt-2" style="color: #ef4444;"><i class="fas fa-ticket-alt"></i> คูปองส่วนลด</h4>
+        <select id="checkoutCouponSelect" class="input-control mt-1" onchange="calculateTotal()" style="border-color: #ef4444; color: #ef4444; font-weight: bold;">
+          <option value="">ไม่ใช้คูปอง</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="glass-panel" style="padding: 20px; margin-bottom: 20px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+        <span>รวมค่าสินค้า</span>
+        <span id="summarySubtotal">฿0.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px;" id="deliveryFeeSection">
+        <span>ค่าจัดส่ง <small id="deliveryFeeCondition" style="color:var(--text-light)"></small></span>
+        <span id="summaryDeliveryFee">฿0.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; color: #ef4444;" id="couponDiscountSection" class="d-none">
+        <span>ส่วนลดคูปอง</span>
+        <span id="summaryCouponDiscount">-฿0.00</span>
+      </div>
+      <hr style="border:none; border-top:1px dashed #ccc; margin:10px 0;">
+      <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem; color:var(--primary);">
+        <span>ยอดสุทธิ</span>
+        <span id="summaryTotal">฿0.00</span>
+      </div>
+      <div id="hiddenPriceNote" class="d-none" style="margin-top:10px; font-size:0.85rem; color:#f59e0b; text-align:center;">
+        * หมายเหตุ: ราคาที่รวมทั้งหมด ยังไม่รวมกับสินค้าที่ไม่มี ราคาตามตกลงกับทางร้าน
+      </div>
+    </div>
+    
+    <button class="btn btn-primary w-100" style="padding: 15px; font-size:1.1rem; margin-bottom: 10px;" onclick="placeOrder()">ยืนยันการสั่งซื้อ</button>
+    <button class="btn btn-glass w-100" style="padding: 15px; font-size:1.1rem;" onclick="switchView('view-home')">กลับไปเลือกสินค้าต่อ</button>
+  </div>
+  
+  <!-- ================= TRACKING VIEW ================= -->
+  <div id="view-tracking" class="view-section" style="padding: 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <button class="btn btn-glass" onclick="switchView('view-home')"><i class="fas fa-arrow-left"></i></button>
+        <h2 style="margin: 0;">ติดตามสถานะการสั่งซื้อ</h2>
+      </div>
+      <button class="btn btn-glass" onclick="loadOrders()" title="รีเฟรช"><i class="fas fa-sync-alt"></i></button>
+    </div>
+    <div style="display:flex; border-bottom: 1px solid #e2e8f0; margin-bottom: 15px;">
+      <div id="tabActive" style="flex:1; text-align:center; padding:10px; cursor:pointer; font-weight:bold; border-bottom: 2px solid var(--primary); color: var(--primary);" onclick="switchOrderTab('active')">ล่าสุด</div>
+      <div id="tabHistory" style="flex:1; text-align:center; padding:10px; cursor:pointer; color: var(--text-light);" onclick="switchOrderTab('history')">ประวัติ</div>
+    </div>
+    <div id="ordersContainer">
+      <div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+    </div>
+    <div id="historyOrdersContainer" style="display:none;"></div>
+    <div id="loadMoreHistoryBtn" style="display:none; text-align:center; margin-top:15px; margin-bottom:20px;">
+      <button class="btn btn-glass" onclick="loadMoreHistory()" style="width:100%; border:1px solid var(--primary); color:var(--primary);">โหลดเพิ่มเติม</button>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- Rewards Modal -->
+  <div id="rewardsModal" class="glass-panel d-none" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; z-index: 2000; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 style="margin: 0; color: var(--primary);"><i class="fas fa-gift"></i> สิทธิพิเศษของคุณ</h3>
+      <button class="btn btn-glass" onclick="toggleRewardsModal()" style="padding: 5px 10px;"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div style="background: rgba(74, 144, 226, 0.1); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px; border: 1px dashed var(--primary);">
+      <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 5px;">แต้มสะสมคงเหลือ (จัดส่ง)</div>
+      <div style="font-size: 2.5rem; font-weight: bold; color: var(--primary); line-height: 1;" id="rewardsPointsDisplay">0</div>
+      <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 10px;" id="rewardsConditionDisplay"></div>
+    </div>
+    
+    <button id="btnRedeemCoupon" class="btn btn-primary w-100" style="margin-bottom: 20px; font-weight: bold; box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);" onclick="redeemCouponCustomer()" disabled>แลกคูปองส่วนลด</button>
+    
+    <h4 style="margin-bottom: 10px; font-size: 1rem;">คูปองของคุณ</h4>
+    <div id="myCouponsList" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+      <div style="text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 10px;">ไม่มีคูปองที่ใช้ได้</div>
+    </div>
+  </div>
+  <div id="rewardsModalOverlay" class="d-none" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1999; backdrop-filter: blur(3px);" onclick="toggleRewardsModal()"></div>
+
+  <!-- Floating Cart Badge -->
+  <div class="floating-cart d-none" id="floatingCart" onclick="switchView('view-checkout')">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <i class="fas fa-shopping-cart fa-lg"></i>
+      <div>
+        <div style="font-weight:bold;" id="floatingCartCount">0 รายการ</div>
+        <div style="font-size:0.8rem;">แตะเพื่อดูตะกร้าสินค้า</div>
+      </div>
+    </div>
+    <div style="font-weight:bold; font-size:1.2rem;" id="floatingCartTotal">฿0.00</div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align: center; margin-top: 40px; padding-bottom: 20px; font-size: 0.8rem; color: var(--text-light);">
+    <span onclick="goToAdmin()" style="cursor:pointer;"><i class="fas fa-user-shield"></i> ล็อกอินระบบหลังร้าน</span> | Developed by Interface21
+  </div>
+
+</div>
+
+  <script src="api.js?v=24"></script>
+  <script src="app.js?v=51"></script>
 
 </body>
 </html>
